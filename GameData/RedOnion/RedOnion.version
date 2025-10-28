@@ -1,31 +1,9 @@
 {
-    "NAME":"RedOnion and Kerbalua",
-    "URL":"https://raw.githubusercontent.com/evandisoft/RedOnion/master/GameData/RedOnion/RedOnion.version",
-    "DOWNLOAD":"https://github.com/evandisoft/RedOnion/releases",
-    "GITHUB":{
-        "USERNAME":"evandisoft",
-        "REPOSITORY":"RedOnion",
-        "ALLOW_PRE_RELEASE":false
-    },
-    "VERSION":{
-        "MAJOR":0,
-        "MINOR":5,
-        "PATCH":2,
-        "BUILD":1
-    },
-    "KSP_VERSION":{
-        "MAJOR":1,
-        "MINOR":11,
-        "PATCH":0
-    },
-    "KSP_VERSION_MIN":{
-        "MAJOR":1,
-        "MINOR":8,
-        "PATCH":0
-    },
-    "KSP_VERSION_MAX":{
-        "MAJOR":1,
-        "MINOR":11,
-        "PATCH":9
-    }
+  "NAME":"RedOnion",
+  "URL":"https://raw.githubusercontent.com/autoany/RedOnion/master/GameData/RedOnion/RedOnion.version",
+  "DOWNLOAD":"https://github.com/autoany/RedOnion/releases",
+  "VERSION": "1.0.0.0",
+  "KSP_VERSION": "1.12",
+  "KSP_VERSION_MIN": "1.8.0",
+  "KSP_VERSION_MAX": "1.12.3"
 }

@@ -17,6 +17,7 @@
     <Deterministic>true</Deterministic>
     <TargetFrameworkProfile />
     <ReleaseVersion>0.4.0</ReleaseVersion>
+    <LangVersion>latest</LangVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -102,7 +103,6 @@
     <Compile Include="ROS\RosManager.cs" />
     <Compile Include="ROS\RosProcess.cs" />
     <Compile Include="ROS\RosThread.cs" />
-    <Compile Include="Utilities\InteropUtilities.cs" />
     <Compile Include="API\VectorUtils.cs" />
     <Compile Include="Utilities\AutoRemoveList.cs" />
     <Compile Include="Utilities\Properties.cs" />
@@ -136,18 +136,12 @@
     <Compile Include="ROS\RosProps.cs" />
     <Compile Include="ROS\RosSuggest.cs" />
     <Compile Include="Namespaces\UI.Window.cs" />
-    <Compile Include="Autopilot\FlightControl.cs" />
-    <Compile Include="MathUtil\Vec.cs" />
-    <Compile Include="MathUtil\Scalar.cs" />
     <Compile Include="ReflectionUtil\NamespaceInstance.cs" />
     <Compile Include="ReflectionUtil\NamespaceMappings.cs" />
     <Compile Include="ReflectionUtil\TypeAlternatives.cs" />
     <Compile Include="ReflectionUtil\NameTypeMap.cs" />
-    <Compile Include="ReflectionUtil\NamespaceInstance.MoonSharp.cs" />
-    <Compile Include="Autopilot\RelativeDirection.cs" />
     <Compile Include="ReflectionUtil\DualCaseSensitivityDict.cs" />
     <Compile Include="ReflectionUtil\GetMappings.cs" />
-    <Compile Include="ReflectionUtil\GetMappings.Lua.cs" />
     <Compile Include="API\AutoRun.cs" />
     <Compile Include="UnsafeAPI\BodiesDictionary.cs" />
     <Compile Include="UnsafeAPI\KerbalsDictionary.cs" />
@@ -155,20 +149,6 @@
     <Compile Include="Utilities\ScriptStringKeyedConstDictionary.cs" />
     <Compile Include="Settings\ProjectSettings.cs" />
     <Compile Include="Settings\SavedSettings.cs" />
-    <Compile Include="Kerbalua\KerbaluaManager.cs" />
-    <Compile Include="Kerbalua\KerbaluaProcess.cs" />
-    <Compile Include="Kerbalua\KerbaluaReplThread.cs" />
-    <Compile Include="Kerbalua\KerbaluaThread.cs" />
-    <Compile Include="Kerbalua\Events\LuaDescriptor.cs" />
-    <Compile Include="Kerbalua\Events\LuaEventDescriptor.cs" />
-    <Compile Include="Kerbalua\Events\LuaEventProxy.cs" />
-    <Compile Include="Kerbalua\KerbaluaGlobals.cs" />
-    <Compile Include="Kerbalua\Proxies\ExperimentalProxy.cs" />
-    <Compile Include="Kerbalua\Proxies\LuaCallProxy.cs" />
-    <Compile Include="Kerbalua\Proxies\LuaProxy.cs" />
-    <Compile Include="Kerbalua\Proxies\ModuleControlSurfaceProxyTable.cs" />
-    <Compile Include="Kerbalua\Proxies\ProxyCallTable.cs" />
-    <Compile Include="Kerbalua\Proxies\ProxyTable.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\RedOnion.Common\RedOnion.Common.csproj">
@@ -186,14 +166,6 @@
     <ProjectReference Include="..\MunOS\MunOS.csproj">
       <Project>{A4C93278-A705-4AC2-B2A9-16B30C2E2C36}</Project>
       <Name>MunOS</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Kerbalua\Kerbalua.csproj">
-      <Project>{F590B1DB-8F33-4986-8383-180952D63CDA}</Project>
-      <Name>Kerbalua</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\MunSharp\MunSharp.csproj">
-      <Project>{91EA9B9D-FE03-4273-BDAF-8AD42EDE1E59}</Project>
-      <Name>MunSharp</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup />

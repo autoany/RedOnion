@@ -3,6 +3,7 @@ using System.Globalization;
 using NUnit.Framework;
 using RedOnion.KSP.Utilities;
 using RedOnion.Utilities;
+using Assert = NUnit.Framework.Legacy.ClassicAssert;
 
 namespace RedOnion.KSP.Tests
 {

@@ -48,7 +48,9 @@ namespace RedOnion.KSP.Parts
 		{
 			scienceQueried = true;
 			var mod = native.FindModuleImplementing<ModuleScienceExperiment>();
-			return mod == null ? null : PartScience.Create(this, mod);
+			if (mod == null || mod.experimentID == "WBIEmptyExperiment")
+				return null;
+			return PartScience.Create(this, mod);
 		}
 
 		[Description("Ship (vehicle/vessel) this part belongs to.")]
@@ -90,7 +92,7 @@ namespace RedOnion.KSP.Parts
 		public virtual bool istype(string name) => false;
 
 		[Description("Position of the part (relative to CoM of active ship/vessel).")]
-		public Vector position => new Vector(native.partTransform.position - FlightGlobals.ActiveVessel.CoMD);
+		public Vector position => new Vector(native.partTransform.position - Ship.ActiveVessel.CoMD);
 
 		[Description("Mass of the part including resources.")]
 		public double mass => native.mass + native.GetResourceMass();

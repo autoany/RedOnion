@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using MunSharp.Interpreter;
 using RedOnion.Attributes;
 using RedOnion.ROS;
 using UnityEngine;
@@ -370,50 +369,6 @@ Beware that multiplication is scaling, not cross product or dot - use appropriat
 			}
 			return false;
 		}
-		[MoonSharpUserDataMetamethod("__unm"), Browsable(false)]
-		public DynValue Neg(ScriptExecutionContext ctx, CallbackArguments args)
-		{
-			if (args.Count != 1)
-				throw new InvalidOperationException("Unexpected number of arguments: " + args.Count);
-			return UserData.Create(
-				-VectorCreator.ToVector(args[0].ToObject()));
-		}
-		[MoonSharpUserDataMetamethod("__add"), Browsable(false)]
-		public DynValue Add(ScriptExecutionContext ctx, CallbackArguments args)
-		{
-			if (args.Count != 2)
-				throw new InvalidOperationException("Unexpected number of arguments: " + args.Count);
-			return UserData.Create(
-				VectorCreator.ToVector(args[0].ToObject())
-				+ VectorCreator.ToVector(args[1].ToObject()));
-		}
-		[MoonSharpUserDataMetamethod("__sub"), Browsable(false)]
-		public DynValue Sub(ScriptExecutionContext ctx, CallbackArguments args)
-		{
-			if (args.Count != 2)
-				throw new InvalidOperationException("Unexpected number of arguments: " + args.Count);
-			return UserData.Create(
-				VectorCreator.ToVector(args[0].ToObject())
-				- VectorCreator.ToVector(args[1].ToObject()));
-		}
-		[MoonSharpUserDataMetamethod("__mul"), Browsable(false)]
-		public DynValue Mul(ScriptExecutionContext ctx, CallbackArguments args)
-		{
-			if (args.Count != 2)
-				throw new InvalidOperationException("Unexpected number of arguments: " + args.Count);
-			return UserData.Create(
-				VectorCreator.ToVector(args[0].ToObject())
-				* VectorCreator.ToVector(args[1].ToObject()));
-		}
-		[MoonSharpUserDataMetamethod("__div"), Browsable(false)]
-		public DynValue Div(ScriptExecutionContext ctx, CallbackArguments args)
-		{
-			if (args.Count != 2)
-				throw new InvalidOperationException("Unexpected number of arguments: " + args.Count);
-			return UserData.Create(
-				VectorCreator.ToVector(args[0].ToObject())
-				/ VectorCreator.ToVector(args[1].ToObject()));
-		}
 
 		bool IConvert.Convert(ref Value self, Descriptor to, CallFlags flags)
 		{
@@ -455,25 +410,25 @@ Beware that multiplication is scaling, not cross product or dot - use appropriat
 			return false;
 		}
 
-		[Browsable(false), MoonSharpHidden]
+		[Browsable(false)]
 		public static readonly Vector zero = new Vector(Vector3d.zero);
-		[Browsable(false), MoonSharpHidden]
+		[Browsable(false)]
 		public static readonly Vector one = new Vector(Vector3d.one);
-		[Browsable(false), MoonSharpHidden]
+		[Browsable(false)]
 		public static readonly Vector forward = new Vector(Vector3d.forward);
-		[Browsable(false), MoonSharpHidden]
+		[Browsable(false)]
 		public static readonly Vector fwd = forward;
-		[Browsable(false), MoonSharpHidden]
+		[Browsable(false)]
 		public static readonly Vector back = new Vector(Vector3d.back);
-		[Browsable(false), MoonSharpHidden]
+		[Browsable(false)]
 		public static readonly Vector up = new Vector(Vector3d.up);
-		[Browsable(false), MoonSharpHidden]
+		[Browsable(false)]
 		public static readonly Vector down = new Vector(Vector3d.down);
-		[Browsable(false), MoonSharpHidden]
+		[Browsable(false)]
 		public static readonly Vector left = new Vector(Vector3d.left);
-		[Browsable(false), MoonSharpHidden]
+		[Browsable(false)]
 		public static readonly Vector right = new Vector(Vector3d.right);
-		[Browsable(false), MoonSharpHidden]
+		[Browsable(false)]
 		public static readonly Vector none = new Vector(new Vector3d(double.NaN, double.NaN, double.NaN));
 	}
 }

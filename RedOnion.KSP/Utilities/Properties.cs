@@ -1,5 +1,3 @@
-using MunSharp.Interpreter;
-using MunSharp.Interpreter.Interop;
 using RedOnion.ROS;
 using RedOnion.Collections;
 using System;
@@ -7,7 +5,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
-using System.Text;
 using RedOnion.Debugging;
 using RedOnion.Common.Completion;
 using RedOnion.ROS.Utilities;
@@ -25,7 +22,7 @@ then (if exact match not found) try insensitive match where UPPER is preferred
 (`SomeThing` will match `Something` if there is `Something` and `something`).
 Can be used as base class for list of celestial bodies,
 discovered assemblies, namespaces, classes etc.")]
-	public abstract class Properties<T> : IEnumerable<T>, ISelfDescribing, IUserDataType, ICompletable
+	public abstract class Properties<T> : IEnumerable<T>, ISelfDescribing, ICompletable
 	{
 		/// <summary>
 		/// Properties with map of native objects to wrapped ones.
@@ -35,7 +32,7 @@ discovered assemblies, namespaces, classes etc.")]
 		public class WithMap<R> : Properties<T>
 		{
 			protected readonly Dictionary<R, T> map = new Dictionary<R, T>();
-			[Browsable(false), MoonSharpHidden]
+			[Browsable(false)]
 			public T this[R key]
 				=> key == null ? default : map.TryGetValue(key, out var it) ? it : default;
 			protected bool Add(string name, T value, R native)
@@ -81,7 +78,7 @@ discovered assemblies, namespaces, classes etc.")]
 		}
 
 		IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
-		[Browsable(false), MoonSharpHidden]
+		[Browsable(false)]
 		public IEnumerator<T> GetEnumerator()
 		{
 			foreach (var pair in list)
@@ -103,18 +100,6 @@ discovered assemblies, namespaces, classes etc.")]
 			completion = null;
 			return false;
 		}
-		DynValue IUserDataType.Index(Script script, DynValue index, bool isDirectIndexing)
-		{
-			var name = index.String;
-			if (strict.TryGetValue(name, out var at) || dict.TryGetValue(name, out at))
-				return DynValue.FromObject(script, list[at].Value);
-			return DynValue.Nil;
-		}
-		bool IUserDataType.SetIndex(Script script, DynValue index, DynValue value, bool isDirectIndexing)
-			=> false;
-		DynValue IUserDataType.MetaIndex(Script script, string metaname)
-			=> null;
-
 
 		int Find(string name) => strict.TryGetValue(name, out var at) || dict.TryGetValue(name, out at) ? at : -1;
 		Descriptor ISelfDescribing.Descriptor => SelfDescriptor.Instance;

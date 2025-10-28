@@ -14,7 +14,7 @@ You can override our scripts simply by opening them in REPL
 and saving the modified version (which will become a file outside of the zip).
 
 ## Autorun
-Both languages can make use of [Autorun](RedOnion.KSP/API/Autorun.md) to automatically load a list of scripts every time the engine gets reset. Which happens when you click the `Reset Engine` button, and whenever you switch to a different game scene.
+Both languages can make use of [Autorun](RedOnion.KSP/API/AutoRun.md) to automatically load a list of scripts every time the engine gets reset. Which happens when you click the `Reset Engine` button, and whenever you switch to a different game scene.
 
 You can access `ksp.HighLogic.LoadedScene` to get the enum of the current scene and compare it with any of the scenes in 
 `ksp.GameScenes`. So for the editor (SPH or VAB), you can check `ksp.HighLogic.LoadedScene==ksp.GameScenes.EDITOR`.

@@ -1,13 +1,10 @@
 using System;
 using System.ComponentModel;
-using MunSharp.Interpreter;
 using RedOnion.Attributes;
 using RedOnion.ROS.Utilities;
 using RedOnion.KSP.Parts;
-using UnityEngine;
 using KSP.Localization;
 using System.Collections.Generic;
-using RedOnion.ROS;
 using RedOnion.Collections;
 using RedOnion.Debugging;
 
@@ -17,19 +14,34 @@ namespace RedOnion.KSP.API
 	public class Ship : ISpaceObject, IDisposable
 	{
 		// for script cleanup
-		[Browsable(false), MoonSharpHidden]
+		[Browsable(false)]
 		public static void DisableAutopilot()
 			=> active?._autopilot?.disable();
 
 		#region Active Ship
 
+		[Browsable(false), Unsafe]
+		public static Vessel ActiveVessel
+		{
+			get
+			{
+				if (!HighLogic.LoadedSceneIsFlight)
+					return null;
+				var vessel = FlightGlobals.ActiveVessel;
+				if (!vessel)
+					return null;
+				var eva = vessel.EVALadderVessel;
+				return eva ? eva : vessel;
+			}
+		}
+
 		static Ship active;
-		[Browsable(false), MoonSharpHidden]
+		[Browsable(false)]
 		public static Ship Active
 		{
 			get
 			{
-				var vessel = HighLogic.LoadedSceneIsFlight ? FlightGlobals.ActiveVessel : null;
+				var vessel = ActiveVessel;
 				if (!vessel)
 				{
 					if (active != null)
@@ -39,8 +51,7 @@ namespace RedOnion.KSP.API
 				if (active?.native != vessel)
 				{
 					ClearActive();
-					if (vessel != null)
-						FromVessel(vessel);
+					FromVessel(vessel);
 				}
 				return active;
 			}
@@ -112,7 +123,7 @@ namespace RedOnion.KSP.API
 		{
 			if (cache.TryGetValue(vessel, out var ship))
 			{
-				if (active == null && ship.native == FlightGlobals.ActiveVessel)
+				if (active == null && ship.native == Ship.ActiveVessel)
 				{
 					active = ship;
 					GameEvents.onVesselChange.Add(ship.VesselChange);
@@ -130,7 +141,7 @@ namespace RedOnion.KSP.API
 			if (hooks == null)
 				new Hooks();
 
-			if (FlightGlobals.ActiveVessel != native)
+			if (Ship.ActiveVessel != native)
 			{
 				MainLogger.DebugLog("Creating Ship for vessel id {0}/{1} named {2}.", native.id, native.persistentId, name);
 				return;
@@ -141,7 +152,7 @@ namespace RedOnion.KSP.API
 		}
 
 		~Ship() => Dispose(false);
-		[Browsable(false), MoonSharpHidden]
+		[Browsable(false)]
 		public void Dispose()
 		{
 			Dispose(true);
@@ -367,7 +378,7 @@ namespace RedOnion.KSP.API
 		#region Orbit - vectors
 
 		[Description("Center of mass relative to (CoM of) active ship (zero for active ship).")]
-		public Vector position => new Vector(native.CoMD - FlightGlobals.ActiveVessel.CoMD);
+		public Vector position => new Vector(native.CoMD - Ship.ActiveVessel.CoMD);
 		[Description("Current orbital velocity.")]
 		public Vector velocity => new Vector(native.obt_velocity);
 		[Description("Current surface velocity.")]
@@ -609,7 +620,7 @@ namespace RedOnion.KSP.API
 					}
 				}
 			}
-			return new Vector(pos - FlightGlobals.ActiveVessel.CoMD);
+			return new Vector(pos - Ship.ActiveVessel.CoMD);
 		}
 		[Description(
 			"Predicted velocity at specified time."

@@ -1,10 +1,8 @@
 using System;
 using Kerbalui.Controls;
 using Kerbalui.Layout;
-using Kerbalui.Types;
 using LiveRepl.Decorators;
 using RedOnion.KSP.API;
-using RedOnion.KSP.Autopilot;
 
 namespace LiveRepl.Parts
 {
@@ -28,10 +26,7 @@ namespace LiveRepl.Parts
 				new Button("Run", uiparts.scriptWindow.RunEditorScript)));
 			AddMinSized(new Button("Terminate", uiparts.scriptWindow.Terminate));
 			disableableStuff.AddMinSized(new Button("Reset Engine", uiparts.scriptWindow.ResetEngine));
-			disableableStuff.AddMinSized(new Button("Reset Autopilot", () => {
-				FlightControl.Instance.Shutdown();
-				Ship.DisableAutopilot();
-			}));
+			disableableStuff.AddMinSized(new Button("Reset Pilot", Ship.DisableAutopilot));
 			disableableStuff.AddMinSized(new Button("Reset All", uiparts.scriptWindow.ResetAll));
 			AddMinSized(new ScriptDisabledElement(uiparts, disableableStuff));
 			AddMinSized(uiparts.scriptEngineSelector=new ScriptEngineSelector(uiparts));

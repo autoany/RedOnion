@@ -1,8 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using MunSharp.Interpreter;
-using MunSharp.Interpreter.Interop;
 using RedOnion.Common.Completion;
 
 namespace RedOnion.KSP.Utilities
@@ -16,12 +14,11 @@ namespace RedOnion.KSP.Utilities
 	/// global "bodies" in the future without having to create a custom per-engine
 	/// definition per dictionary-like-thing.
 	/// </summary>
-	public class ScriptStringKeyedConstDictionary<T> : Dictionary<string, T>, ICompletable, IUserDataType
+	public class ScriptStringKeyedConstDictionary<T> : Dictionary<string, T>, ICompletable
 	{
 		public ScriptStringKeyedConstDictionary()
 		{
 		}
-
 
 		public IList<string> PossibleCompletions => Keys.ToList();
 
@@ -34,33 +31,6 @@ namespace RedOnion.KSP.Utilities
 			}
 			completion = null;
 			return false;
-		}
-
-		public DynValue Index(Script script, DynValue index, bool isDirectIndexing)
-		{
-			if (index.Type != DataType.String)
-			{
-				throw new Exception("Type of index must be string.");
-			}
-
-			if (TryGetValue(index.String,out T value))
-			{
-				return DynValue.FromObject(script,value);
-			}
-			else
-			{
-				return DynValue.Nil;
-			}
-		}
-
-		public DynValue MetaIndex(Script script, string metaname)
-		{
-			return null;
-		}
-
-		public bool SetIndex(Script script, DynValue index, DynValue value, bool isDirectIndexing)
-		{
-			throw new NotSupportedException("Cannot modify fields of this const dictionary.");
 		}
 	}
 }

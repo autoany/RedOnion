@@ -129,7 +129,7 @@ namespace RedOnion.KSP.API
 			"Predicted position at specified time."
 			+ " Does not include the movement of celestial bodies."
 			+ " See [orbit.png](orbit.png).")]
-		public Vector positionAt(TimeStamp time) => new Vector(native.getPositionAtUT(time) - FlightGlobals.ActiveVessel.CoMD);
+		public Vector positionAt(TimeStamp time) => new Vector(native.getPositionAtUT(time) - Ship.ActiveVessel.CoMD);
 		[Description(
 			"Predicted velocity at specified time."
 			+ " Does not include the movement of celestial bodies.")]

@@ -1,6 +1,7 @@
 using System;
 using NUnit.Framework;
 using RedOnion.ROS.Parsing;
+using Assert = NUnit.Framework.Legacy.ClassicAssert;
 
 //	x + 1
 //	1u + x * 3f

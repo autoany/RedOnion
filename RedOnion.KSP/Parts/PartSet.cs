@@ -1,18 +1,12 @@
 //#define DEBUG_PARTS_REFRESH
 
 using System;
-using System.Collections;
-using System.Collections.Generic;
-using RedOnion.ROS;
-using RedOnion.KSP.API;
-using System.ComponentModel;
-using MunSharp.Interpreter;
-using KSP.UI.Screens;
-using static RedOnion.Debugging.QueueLogger;
-using RedOnion.Attributes;
 using System.Text;
-using System.Diagnostics;
-using RedOnion.Debugging;
+using System.Collections.Generic;
+using System.ComponentModel;
+using RedOnion.KSP.API;
+using RedOnion.Attributes;
+using static RedOnion.Debugging.QueueLogger;
 
 namespace RedOnion.KSP.Parts
 {
@@ -255,7 +249,7 @@ namespace RedOnion.KSP.Parts
 		}
 
 		~ShipPartSet() => Dispose(false);
-		[Browsable(false), MoonSharpHidden]
+		[Browsable(false)]
 		public void Dispose()
 		{
 			Dispose(true);

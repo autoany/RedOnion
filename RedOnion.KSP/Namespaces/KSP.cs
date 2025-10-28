@@ -1,10 +1,8 @@
 using System;
-using RedOnion.KSP.Autopilot;
 using KSP.UI.Screens;
 using UE = UnityEngine;
 using System.ComponentModel;
 using RedOnion.Attributes;
-using RedOnion.KSP.MathUtil;
 using RedOnion.KSP.UnsafeAPI;
 
 namespace RedOnion.KSP.Namespaces
@@ -20,11 +18,6 @@ namespace RedOnion.KSP.Namespaces
 		[Description("UnityEngine.Mathf")]
 		public static readonly Type Mathf = typeof(UE.Mathf);
 
-		[Description("Math utilities.")]
-		public static readonly Scalar Scalar = new Scalar();
-		[Description("Vector utilities.")]
-		public static readonly Vec Vec = new Vec();
-
 		[Description("A map of planet names to planet bodies. (Unsafe API)")]
 		public static BodiesDictionary bodies => BodiesDictionary.Instance;
 
@@ -37,8 +30,6 @@ namespace RedOnion.KSP.Namespaces
 		public static readonly Type FlightCtrlState = typeof(FlightCtrlState);
 		[Description("[KSP API](https://kerbalspaceprogram.com/api/class_flight_globals.html): Flight Globals (for autopilot).")]
 		public static FlightGlobals FlightGlobals => FlightGlobals.fetch;
-		[Description("Custom autopilot.")]
-		public static FlightControl FlightControl => FlightControl.Instance;
 		[Description("[KSP API](https://kerbalspaceprogram.com/api/class_flight_driver.html)")]
 		public static FlightDriver FlightDriver => FlightDriver.fetch;
 

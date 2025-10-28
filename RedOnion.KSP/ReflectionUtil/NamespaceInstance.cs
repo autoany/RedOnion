@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using MunSharp.Interpreter.Interop;
 using RedOnion.Attributes;
 using RedOnion.Common.Completion;
 

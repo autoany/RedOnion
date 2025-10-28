@@ -59,7 +59,7 @@ namespace RedOnion.KSP.Parts
 
 		Science.Subject _subject;
 		TimeStamp _subjectUpdate = TimeStamp.never;
-		[WorkInProgress, Description("Science subject for the experiment and current situation.")]
+		[Description("Science subject for the experiment and current situation.")]
 		public Science.Subject subject
 		{
 			get
@@ -81,6 +81,8 @@ namespace RedOnion.KSP.Parts
 				return _subject;
 			}
 		}
+		[Description("Science subject ID for the experiment and current situation.")]
+		public string id => subject.id;
 
 		[Description("Science returned to KSC.")]
 		public double completed => subject.completed;

@@ -1,4 +1,3 @@
-using MunSharp.Interpreter;
 using MunOS;
 using RedOnion.Attributes;
 using RedOnion.ROS;
@@ -6,9 +5,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace RedOnion.KSP.Utilities
 {
@@ -75,7 +71,7 @@ namespace RedOnion.KSP.Utilities
 		}
 
 		IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
-		[Browsable(false), MoonSharpHidden]
+		[Browsable(false)]
 		public IEnumerator<T> GetEnumerator()
 		{
 			if (first == null)
@@ -184,13 +180,13 @@ namespace RedOnion.KSP.Utilities
 				}
 			}
 
-			[Browsable(false), MoonSharpHidden]
+			[Browsable(false)]
 			public bool Equals(Subscription subscription)
 				=> ReferenceEquals(this, subscription);
-			[Browsable(false), MoonSharpHidden]
+			[Browsable(false)]
 			public override bool Equals(object o)
 				=> o is Subscription s ? Equals(s) : o is Value v && Equals(v);
-			[Browsable(false), MoonSharpHidden]
+			[Browsable(false)]
 			public override int GetHashCode()
 				=> base.GetHashCode();
 		}

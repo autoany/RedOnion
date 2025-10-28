@@ -5,6 +5,7 @@ using RedOnion.Debugging;
 using RedOnion.KSP.API;
 using RedOnion.KSP.ROS;
 using RedOnion.ROS;
+using Assert = NUnit.Framework.Legacy.ClassicAssert;
 
 namespace RedOnion.KSP.Tests
 {

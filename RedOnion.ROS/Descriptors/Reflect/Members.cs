@@ -559,20 +559,15 @@ namespace RedOnion.ROS
 					{
 						if (m.ReturnType == typeof(void))
 							return new Value(new Action0.Gen1(m));
-						else
-							return new Value(new Function0.Gen1(m));
+						return new Value(new Function0.Gen1(m));
 					}
 					else if (m.ReturnType == typeof(void))
 					{
 						return new Value((Descriptor)Activator.CreateInstance(
 							typeof(Procedure0<>.Gen1).MakeGenericType(m.DeclaringType), m), m);
 					}
-					else
-					{
-						return new Value((Descriptor)Activator.CreateInstance(
-							typeof(Method0<>.Gen1).MakeGenericType(m.DeclaringType), m), m);
-					}
-					return Value.Void;
+					return new Value((Descriptor)Activator.CreateInstance(
+						typeof(Method0<>.Gen1).MakeGenericType(m.DeclaringType), m), m);
 				}
 				foreach (var arg in args)
 				{

@@ -1,13 +1,7 @@
-using MunSharp.Interpreter;
 using RedOnion.Attributes;
-using RedOnion.ROS;
 using RedOnion.ROS.Utilities;
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
-using System.Text;
-using UnityEngine;
 
 namespace RedOnion.KSP.API
 {
@@ -60,7 +54,7 @@ namespace RedOnion.KSP.API
 		}
 
 		~Autopilot() => Dispose(false);
-		[Browsable(false), MoonSharpHidden]
+		[Browsable(false)]
 		public void Dispose()
 		{
 			Dispose(true);

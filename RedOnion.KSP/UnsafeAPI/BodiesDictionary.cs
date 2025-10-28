@@ -2,8 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
-using MunSharp.Interpreter;
-using MunSharp.Interpreter.Interop;
 using RedOnion.KSP.Utilities;
 
 namespace RedOnion.KSP.UnsafeAPI

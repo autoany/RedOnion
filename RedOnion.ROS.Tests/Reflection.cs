@@ -5,6 +5,7 @@ using System.Security.Cryptography.X509Certificates;
 using NUnit.Framework;
 using RedOnion.Attributes;
 using RedOnion.ROS.Objects;
+using Assert = NUnit.Framework.Legacy.ClassicAssert;
 
 namespace RedOnion.ROS.Tests
 {

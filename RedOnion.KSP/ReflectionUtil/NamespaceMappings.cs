@@ -2,8 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using MunSharp.Interpreter;
-using MunSharp.Interpreter.Interop;
 
 namespace RedOnion.KSP.ReflectionUtil
 {

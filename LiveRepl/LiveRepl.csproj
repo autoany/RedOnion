@@ -35,9 +35,6 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
-    <Reference Include="Antlr4.Runtime.Standard">
-      <HintPath>..\packages\Antlr4.Runtime.Standard.4.7.1.1\lib\net35\Antlr4.Runtime.Standard.dll</HintPath>
-    </Reference>
     <Reference Include="Mono.Security">
       <HintPath>$(KerbalLibs)\Mono.Security.dll</HintPath>
       <Private>False</Private>
@@ -137,10 +134,6 @@
       <Project>{034C16AB-D16E-4AFE-9837-812499EE2F3D}</Project>
       <Name>RedOnion.UI</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Kerbalua\Kerbalua.csproj">
-      <Project>{F590B1DB-8F33-4986-8383-180952D63CDA}</Project>
-      <Name>Kerbalua</Name>
-    </ProjectReference>
     <ProjectReference Include="..\Kerbalui\Kerbalui.csproj">
       <Project>{7A943166-A67E-420A-BCA0-5231D57A18BD}</Project>
       <Name>Kerbalui</Name>
@@ -152,10 +145,6 @@
     <ProjectReference Include="..\RedOnion.Common\RedOnion.Common.csproj">
       <Project>{2D34D879-1A21-4F8F-BF49-38CED2B40406}</Project>
       <Name>RedOnion.Common</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\MunSharp\MunSharp.csproj">
-      <Project>{91EA9B9D-FE03-4273-BDAF-8AD42EDE1E59}</Project>
-      <Name>MunSharp</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup />

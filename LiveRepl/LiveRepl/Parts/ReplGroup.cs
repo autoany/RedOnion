@@ -1,9 +1,6 @@
-using Kerbalua.Completion;
 using Kerbalui.Controls;
 using Kerbalui.EventHandling;
 using Kerbalui.Layout;
-using Kerbalui.Types;
-using RedOnion.KSP.Settings;
 using UnityEngine;
 
 namespace LiveRepl.Parts

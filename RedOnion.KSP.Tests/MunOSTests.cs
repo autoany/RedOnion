@@ -1,8 +1,7 @@
 using System;
 using MunOS;
 using NUnit.Framework;
-using RedOnion.KSP.ROS;
-using Kerbalua.Scripting;
+using Assert = NUnit.Framework.Legacy.ClassicAssert;
 
 namespace RedOnion.KSP.Tests
 {

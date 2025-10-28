@@ -1,9 +1,7 @@
 using System;
 using System.Collections.Generic;
 using NUnit.Framework;
-using RedOnion.KSP.API;
 using RedOnion.KSP.ROS;
-using RedOnion.ROS;
 
 namespace RedOnion.KSP.Tests
 {
@@ -19,7 +17,7 @@ namespace RedOnion.KSP.Tests
 				if (what.Equals(e, StringComparison.OrdinalIgnoreCase))
 					return;
 			}
-			Assert.Fail("List does not contain '{0}'", what);
+			Assert.Fail($"List does not contain '{what}'");
 		}
 
 		[Test]

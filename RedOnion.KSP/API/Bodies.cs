@@ -79,11 +79,11 @@ and elements are also properties (`bodies.kerbin`, `bodies.mun`).")]
 		ISpaceObject ISpaceObject.body => body;
 
 		[Description("Position of the body (relative to active ship).")]
-		public Vector position => new Vector(native.position - FlightGlobals.ActiveVessel.CoMD);
+		public Vector position => new Vector(native.position - Ship.ActiveVessel.CoMD);
 		[Description("Current orbital velocity (relative to parent body, zero for Sun/Kerbol).")]
 		public Vector velocity => new Vector(native.orbit?.vel.xzy ?? Vector3d.zero);
 		[Description("Predicted position at specified time.")]
-		public Vector positionAt(TimeStamp time) => new Vector(native.getPositionAtUT(time) - FlightGlobals.ActiveVessel.CoMD);
+		public Vector positionAt(TimeStamp time) => new Vector(native.getPositionAtUT(time) - Ship.ActiveVessel.CoMD);
 		[Description("Predicted velocity at specified time.")]
 		public Vector velocityAt(TimeStamp time) => new Vector(native.orbit?.getOrbitalVelocityAtUT(time).xzy ?? Vector3d.zero);
 

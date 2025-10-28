@@ -1,4 +1,3 @@
-using MunSharp.Interpreter;
 using RedOnion.Collections;
 using System;
 using System.Collections;
@@ -71,7 +70,7 @@ namespace RedOnion.KSP.API
 		}
 		[Description("Get index of element. -1 if not found.")]
 		public int indexOf(T item) => IndexOf(item);
-		[Browsable(false), MoonSharpHidden]
+		[Browsable(false)]
 		public int IndexOf(T item)
 		{
 			Update();
@@ -79,13 +78,13 @@ namespace RedOnion.KSP.API
 		}
 		[Description("Test wether the list (or set) contains specified element.")]
 		public bool contains(T item) => Contains(item);
-		[Browsable(false), MoonSharpHidden]
+		[Browsable(false)]
 		public virtual bool Contains(T item)
 		{
 			Update();
 			return list.Contains(item);
 		}
-		[Browsable(false), MoonSharpHidden]
+		[Browsable(false)]
 		public void CopyTo(T[] array, int index)
 		{
 			Update();
@@ -101,7 +100,7 @@ namespace RedOnion.KSP.API
 		}
 
 		IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
-		[Browsable(false), MoonSharpHidden]
+		[Browsable(false)]
 		public virtual IEnumerator<T> GetEnumerator()
 		{
 			Update();

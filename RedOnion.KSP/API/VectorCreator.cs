@@ -1,4 +1,3 @@
-using MunSharp.Interpreter;
 using RedOnion.KSP.Utilities;
 using RedOnion.ROS;
 using System;
@@ -13,7 +12,7 @@ namespace RedOnion.KSP.API
 		+ " Can also convert array / list of numbers (`V([1,2,3])` becomes `V(1,2,3)`).")]
 	public partial class VectorCreator : ICallable
 	{
-		[Browsable(false), MoonSharpHidden]
+		[Browsable(false)]
 		public static VectorCreator Instance { get; } = new VectorCreator();
 		protected VectorCreator() { }
 
@@ -94,22 +93,15 @@ namespace RedOnion.KSP.API
 				return true;
 			}
 		}
-		[MoonSharpUserDataMetamethod("__call"), Browsable(false)]
-		public static DynValue Call(ScriptExecutionContext ctx, CallbackArguments args)
-		{
-			var result = Value.Void;
-			var self = args.ToRos(out var ros);
-			return Call(ref result, self, ros) ? result.ToLua() : DynValue.Void;
-		}
 
 		public static Vector? ToVector(object value)
 			=> ToVector3d(value, out var v) ? new Vector(v) : (Vector?)null;
 		public static Vector? ToVector(Value value)
 			=> ToVector3d(value, out var v) ? new Vector(v) : (Vector?)null;
-		[Browsable(false), MoonSharpHidden]
+		[Browsable(false)]
 		public static Vector? ToConstVector(object value)
 			=> ToVector3d(value, out var v) ? new Vector(v) : (Vector?)null;
-		[Browsable(false), MoonSharpHidden]
+		[Browsable(false)]
 		public static Vector? ToConstVector(Value value)
 			=> ToVector3d(value, out var v) ? new Vector(v) : (Vector?)null;
 		public static bool ToVector3d(object value, out Vector3d result)

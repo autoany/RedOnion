@@ -1,8 +1,7 @@
-using System;
-using System.Collections;
 using System.Linq;
 using NUnit.Framework;
 using RedOnion.ROS.Objects;
+using Assert = NUnit.Framework.Legacy.ClassicAssert;
 
 namespace RedOnion.ROS.Tests
 {

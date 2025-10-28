@@ -35,9 +35,6 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
-    <Reference Include="Antlr4.Runtime.Standard">
-      <HintPath>..\packages\Antlr4.Runtime.Standard.4.7.1.1\lib\net35\Antlr4.Runtime.Standard.dll</HintPath>
-    </Reference>
     <Reference Include="Mono.Security">
       <HintPath>$(KerbalLibs)\Mono.Security.dll</HintPath>
       <Private>False</Private>
@@ -137,18 +134,7 @@
       <Name>RedOnion.Common</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Kerbalui\" />
-    <Folder Include="Kerbalui\Controls\" />
-    <Folder Include="Kerbalui\Decorators\" />
-    <Folder Include="Kerbalui\Layout\" />
-    <Folder Include="Kerbalui\Types\" />
-    <Folder Include="Kerbalui\EventHandling\" />
-    <Folder Include="Kerbalui\Util\" />
-    <Folder Include="Kerbalui\Layout\Abstract\" />
-    <Folder Include="Kerbalui\EditingChanges\" />
-    <Folder Include="Kerbalui\Interfaces\" />
-  </ItemGroup>
+  <ItemGroup />
   <ItemGroup>
     <None Include="DevReadme.md" />
   </ItemGroup>
