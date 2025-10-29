@@ -199,13 +199,21 @@ namespace RedOnion.KSP.Parts
 
 		private void FindScience()
 		{
+			// if kerbal EVA = we are handling active ship which is not FlightGlobals.ActiveVessel
+			// but FlightGlobals.ActiveVessel.EVALadderVessel)
 			if (_ship == Ship.Active && FlightGlobals.ActiveVessel != _ship.native)
 			{
+				// there is only one part in kerbal, but for sure
 				foreach (var epart in FlightGlobals.ActiveVessel.Parts)
 				{
-					var sci = PartScience.Create(null, epart.FindModuleImplementing<ModuleScienceExperiment>());
-					if (sci != null)
-						science.Add(sci);
+					foreach (var module in epart.Modules)
+					{
+						if (module is not ModuleScienceExperiment mse)
+							continue;
+						var sci = PartScience.Create(null, mse);
+						if (sci != null)
+							science.Add(sci);
+					}
 				}
 			}
 			foreach (var part in this)

@@ -99,9 +99,17 @@ namespace RedOnion.KSP.Parts
 			this.part = part;
 			native = module;
 		}
+
+		[Browsable(false)]
+		public static readonly HashSet<string> ExcludedExperimentIds = new HashSet<string>()
+		{
+			"evaScience", // needs "EVAExperimentsKit" in ModuleInventoryPart?
+			"ROCScience", // Breaking Ground RobotArmScanner?
+			"WBIEmptyExperiment"
+		};
 		internal static PartScience Create(PartBase part, ModuleScienceExperiment module)
 		{
-			if (module == null || module.experimentID == "WBIEmptyExperiment")
+			if (module == null || ExcludedExperimentIds.Contains(module.experimentID))
 				return null;
 			var type = module.GetType();
 			if (DMagic.api1?.type.IsAssignableFrom(type) == true)
