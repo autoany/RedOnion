@@ -47,10 +47,7 @@ namespace RedOnion.KSP.Parts
 		private PartScience FindScience()
 		{
 			scienceQueried = true;
-			var mod = native.FindModuleImplementing<ModuleScienceExperiment>();
-			if (mod == null || mod.experimentID == "WBIEmptyExperiment")
-				return null;
-			return PartScience.Create(this, mod);
+			return PartScience.Create(this, native.FindModuleImplementing<ModuleScienceExperiment>());
 		}
 
 		[Description("Ship (vehicle/vessel) this part belongs to.")]

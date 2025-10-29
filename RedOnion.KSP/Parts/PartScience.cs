@@ -101,6 +101,8 @@ namespace RedOnion.KSP.Parts
 		}
 		internal static PartScience Create(PartBase part, ModuleScienceExperiment module)
 		{
+			if (module == null || module.experimentID == "WBIEmptyExperiment")
+				return null;
 			var type = module.GetType();
 			if (DMagic.api1?.type.IsAssignableFrom(type) == true)
 				return new DMagic(part, module, DMagic.api1);
@@ -110,7 +112,7 @@ namespace RedOnion.KSP.Parts
 		}
 
 		public override string ToString()
-			=> Value.Format($"{part.name}/{native.experimentID}");
+			=> Value.Format($"{part?.name??("EVA")}/{native.experimentID}");
 
 		[WorkInProgress, Description("Ready to perform experiment (`state == \"ready\" and capacity > 0`).")]
 		public bool ready => state == ScienceState.ready && capacity > 0.0;

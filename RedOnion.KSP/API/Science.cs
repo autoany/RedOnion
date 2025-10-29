@@ -204,18 +204,29 @@ public static class Science
 			var active = FlightGlobals.ActiveVessel;
 			if (!active)
 				return;
-			var v = active.EVALadderVessel;
-			foreach (var c in v.FindPartModulesImplementing<IScienceDataContainer>())
+			bool second = false;
+			for (; ; )
 			{
-				var list = c.GetData();
-				if (list == null)
-					continue;
-				foreach (var d in list)
+				foreach (var c in active.FindPartModulesImplementing<IScienceDataContainer>())
 				{
-					var it = new Data(d);
-					data.Add(it);
-					dict[it.id] = it;
+					var list = c.GetData();
+					if (list == null)
+						continue;
+					foreach (var d in list)
+					{
+						var it = new Data(d);
+						data.Add(it);
+						dict[it.id] = it;
+					}
 				}
+
+				if (second)
+					break;
+				second = true;
+				var v = active.EVALadderVessel;
+				if (v == active)
+					break;
+				active = v;
 			}
 			Refresh?.Invoke();
 		}

@@ -199,6 +199,15 @@ namespace RedOnion.KSP.Parts
 
 		private void FindScience()
 		{
+			if (_ship == Ship.Active && FlightGlobals.ActiveVessel != _ship.native)
+			{
+				foreach (var epart in FlightGlobals.ActiveVessel.Parts)
+				{
+					var sci = PartScience.Create(null, epart.FindModuleImplementing<ModuleScienceExperiment>());
+					if (sci != null)
+						science.Add(sci);
+				}
+			}
 			foreach (var part in this)
 			{
 				var sci = part.science;
