@@ -36,10 +36,10 @@ namespace RedOnion.KSP.Parts
 		[Description("Module needs some time before operation.")]
 		cooldown,
 		[Description("Unknown state, probably cannot perform experiments now.")]
-		uknown
+		unknown
 	}
 
-	[WorkInProgress, Description("Available science through one part.")]
+	[Description("Available science through one part.")]
 	public class PartScience
 	{
 		[Description("The part this science belongs to.")]
@@ -122,10 +122,23 @@ namespace RedOnion.KSP.Parts
 		public override string ToString()
 			=> Value.Format($"{part?.name??("EVA")}/{native.experimentID}");
 
-		[WorkInProgress, Description("Ready to perform experiment (`state == \"ready\" and capacity > 0`).")]
-		public bool ready => state == ScienceState.ready && capacity > 0.0;
-		[WorkInProgress, Description("State of science module.")]
-		public virtual ScienceState state
+		[Description("Ready to perform experiment.")]
+		public bool ready => state == ScienceState.ready;
+		[Description("Experiment deployed (full of data).")]
+		public bool deployed => native.Deployed;
+		[Description("Experiment deployed (full of data).")]
+		public bool full => native.Deployed;
+		[Description("Experiment inoperable.")]
+		public bool inoperable => native.Inoperable;
+		[Description("Experiment shielded and not available as such.")]
+		public bool shielded => !native.availableShielded && native.part.ShieldedFromAirstream;
+		[Description("Experiment is available in current situation.")]
+		public bool available => astate == ScienceState.ready;
+		[Description("Experiment cooldown.")]
+		public double cooldown => native.useCooldown ? native.cooldownTimer : 0.0;
+
+		[Description("State/readiness of science module.")]
+		public ScienceState state
 		{
 			get
 			{
@@ -135,6 +148,21 @@ namespace RedOnion.KSP.Parts
 					return ScienceState.inoperable;
 				if (!native.availableShielded && native.part.ShieldedFromAirstream)
 					return ScienceState.shielded;
+				var value = astate;
+				if (value != ScienceState.ready)
+					return value;
+				if (native.useCooldown && native.cooldownTimer > 0.0)
+					return ScienceState.cooldown;
+				if (capacity > 0.0)
+					return ScienceState.ready;
+				return ScienceState.unknown;
+			}
+		}
+		[Description("Experiment availability in current situation.")]
+		public virtual ScienceState astate
+		{
+			get
+			{
 				if (!experiment.IsAvailableWhile(ScienceUtil.GetExperimentSituation(native.vessel), native.vessel.mainBody))
 					return ScienceState.unavailable;
 				var usage = (ExperimentUsageReqs)native.usageReqMaskInternal;
@@ -143,7 +171,7 @@ namespace RedOnion.KSP.Parts
 					native.vessel, native.part, usage, native.experiment, ref msg))
 				{
 					if (usage == ExperimentUsageReqs.Never)
-						return ScienceState.uknown;
+						return ScienceState.unknown;
 					if ((usage & ExperimentUsageReqs.VesselControl) != 0
 						&& !native.vessel.IsControllable)
 						return ScienceState.noControl;
@@ -161,10 +189,8 @@ namespace RedOnion.KSP.Parts
 						: native.vessel.GetVesselCrew()).Any(x =>
 						x.HasEffect<SpecialExperimentSkill>()))
 						return ScienceState.noScientist;
-					return ScienceState.uknown;
+					return ScienceState.unknown;
 				}
-				if (native.useCooldown && native.cooldownTimer > 0.0)
-					return ScienceState.cooldown;
 				return ScienceState.ready;
 			}
 		}
@@ -301,19 +327,13 @@ namespace RedOnion.KSP.Parts
 			public override ScienceExperiment experiment
 				=> _scienceExp != null ? _scienceExp(native) : base.experiment;
 
-			public override ScienceState state
+			public override ScienceState astate
 			{
 				get
 				{
 					if (_canConduct == null)
-						return base.state;
-					if (native.Deployed)
-						return ScienceState.full;
-					if (native.Inoperable)
-						return ScienceState.inoperable;
-					if (!native.availableShielded && native.part.ShieldedFromAirstream)
-						return ScienceState.shielded;
-					return _canConduct(native) ? ScienceState.ready : ScienceState.uknown;
+						return base.astate;
+					return _canConduct(native) ? ScienceState.ready : ScienceState.unknown;
 				}
 			}
 
