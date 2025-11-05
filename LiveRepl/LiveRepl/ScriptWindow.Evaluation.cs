@@ -118,69 +118,24 @@ namespace LiveRepl
 
 			foreach (var engineName in engines.Keys)
 			{
-				uiparts.scriptEngineSelector.AddMinSized(new Button(engineName,() =>
+				uiparts.scriptEngineSelector.AddMinSized(new Button(engineName, () =>
 				{
 					SetCurrentEngineProcess(engineName);
 					SavedSettings.SaveSetting("lastEngine", engineName);
 				}));
 			}
-			//replEvaluators["ROS"] = new RedOnionReplEvaluator()
-			//{
-			//	PrintAction = uiparts.replOutoutArea.AddOutput,
-			//	PrintErrorAction = uiparts.replOutoutArea.AddError
-			//};
-			//replEvaluators["Lua"] = new MoonSharpReplEvaluator()
-			//{
-			//	PrintAction = uiparts.replOutoutArea.AddOutput,
-			//	PrintErrorAction = uiparts.replOutoutArea.AddError
-			//};
-			//#if DEBUG
-			//			replEvaluators["nLua"] = new KerbnluaReplEvaluator()
-			//			{
-			//				PrintAction = uiparts.replOutoutArea.AddOutput,
-			//				PrintErrorAction = uiparts.replOutoutArea.AddError
-			//			};
-			//#endif
-			//var scriptEngineSelector=uiparts.scriptEngineSelector;
-
-			//string lastEngineName = SavedSettings.LoadSetting("lastEngine", "Lua");
-			//if (replEvaluators.ContainsKey(lastEngineName))
-			//{
-			//	SetCurrentEvaluator(lastEngineName);
-			//}
-			//else
-			//{
-			//	foreach (var evaluatorName in replEvaluators.Keys)
-			//	{
-			//		SetCurrentEvaluator(evaluatorName);
-			//		SavedSettings.SaveSetting("lastEngine", evaluatorName);
-			//		break;
-			//	}
-			//}
-
-			//foreach (var evaluatorName in replEvaluators.Keys)
-			//{
-			//	scriptEngineSelector.AddMinSized(new Button(evaluatorName,() =>
-			//	{
-			//		SetCurrentEvaluator(evaluatorName);
-			//		SavedSettings.SaveSetting("lastEngine", evaluatorName);
-			//	}));
-			//}
 
 			RunAutorunScripts();
 		}
 
 		public IList<string> GetAutorunScripts(string extensionToMatch)
 		{
-			var allScriptNames = AutoRun.scripts();
-			var extensionScriptNames=new List<string>();
-			foreach (var scriptname in allScriptNames)
+			var extensionScriptNames = new List<string>();
+			foreach (var scriptname in AutoRun.Instance)
 			{
-				var extension=Path.GetExtension(scriptname);
-				if (extension==extensionToMatch)
-				{
+				var extension = Path.GetExtension(scriptname);
+				if (extension.Equals(extensionToMatch, StringComparison.OrdinalIgnoreCase))
 					extensionScriptNames.Add(scriptname);
-				}
 			}
 			return extensionScriptNames;
 		}

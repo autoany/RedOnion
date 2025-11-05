@@ -1,8 +1,19 @@
 global using System;
+global using System.IO;
 global using System.ComponentModel;
+global using System.Collections;
 global using System.Collections.Generic;
+global using System.Linq;
+global using System.Linq.Expressions;
+global using System.Reflection;
 global using RedOnion.Attributes;
+global using RedOnion.Collections;
+global using RedOnion.Debugging;
 global using RedOnion.ROS.Utilities;
+global using RedOnion.ROS;
+global using RedOnion.KSP.API;
+global using UnityEngine;
+global using Time = RedOnion.KSP.API.Time;
 
 using RedOnion.KSP.Namespaces;
 using RedOnion.KSP.ReflectionUtil;
@@ -43,7 +54,7 @@ public static class Globals
 	#region Fields: Type references - Namespaces and singletons (static classes)
 
 	[Description("An api for setting which scripts will be ran when an engine is reset.")]
-	public static readonly Type autorun = typeof(AutoRun);
+	public static readonly AutoRun autorun = AutoRun.Instance;
 
 	// 'os' conflicts with lua's 'os' namespace so 'munos' is an alias for that.
 	[Description("Operating System - interface to MunOS.")]

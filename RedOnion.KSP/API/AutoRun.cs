@@ -1,48 +1,123 @@
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
 using RedOnion.KSP.Settings;
+using System.Text;
 
-namespace RedOnion.KSP.API
+namespace RedOnion.KSP.API;
+
+[Description("Used to get, set, or modify the current list of scripts (file names, paths)"
++ "that are to be executed first whenever an engine is initialized or reset.")]
+public class AutoRun : IList<string>
 {
-	[Description("Used to get, set, or modify the current list of scripts that are to be autoran "
-	+" whenever an engine is initialized or reset.")]
-	public static class AutoRun
+	public static readonly AutoRun Instance = new AutoRun();
+	protected AutoRun() { }
+
+	protected const string AutoRunSettingName = "AutoRun";
+	protected ListCore<string> list;
+	protected bool loaded;
+
+	protected AutoRun Load()
 	{
-		const string AutoRunSettingName = "AutoRun";
-
-
-		//public static AutoRun Instance = new AutoRun();
-
-		[Description("Clears the list and saves the empty list.")]
-		public static void clear()
+		if (!loaded)
 		{
-			SavedSettings.SaveListSetting(AutoRunSettingName, new List<string>());
+			loaded = true;
+			list.AddRange(SavedSettings.LoadListSetting(AutoRunSettingName));
 		}
+		return this;
+	}
+	protected void Save()
+	{
+		SavedSettings.SaveListSetting(AutoRunSettingName, this);
+	}
 
-		[Description("Returns a list of the current autorun scripts")]
-		public static IList<string> scripts() => SavedSettings.LoadListSetting(AutoRunSettingName);
+	[Description("Clears the list and saves the empty list.")]
+	public void Clear()
+	{
+		list.Clear();
+		loaded = true;
+		Save();
+	}
 
-		[Description("Saves the given list of scripts as the new list of autorun scripts.")]
-		public static void save(IList<string> scripts)
+	[Description("Adds a new script to the list.")]
+	public void Add(string script)
+	{
+		Load();
+		list.Add(script);
+		Save();
+	}
+
+	[Description("Removes the given script from the list.")]
+	public bool Remove(string script)
+	{
+		Load();
+		bool was = list.Remove(script);
+		Save();
+		return was;
+	}
+
+	[Description("Inserts a new script to the list at the specified index.")]
+	public void Insert(int index, string script)
+	{
+		Load();
+		list.Insert(index, script);
+		Save();
+	}
+
+	[Description("Removes the script at the specified index.")]
+	public void RemoveAt(int index)
+	{
+		Load();
+		list.RemoveAt(index);
+		Save();
+	}
+
+	[Description("Number of scripts in the list.")]
+	public int Count => Load().list.Count;
+
+	[Description("Get script by index. Will throw exception if index is out of range.")]
+	public string this[int index]
+	{
+		get => Load().list[index];
+		set
 		{
-			SavedSettings.SaveListSetting(AutoRunSettingName, scripts);
-		}
-
-		[Description("Adds a new scriptname to the list of autorun scripts")]
-		public static void add(string scriptname)
-		{
-			var s = new List<string>(scripts());
-			s.Add(scriptname);
-			save(s);
-		}
-
-		[Description("Removes the given scriptname from the list of autorun sccripts")]
-		public static void remove(string scriptname)
-		{
-			var s = new List<string>(scripts());
-			s.Remove(scriptname);
-			save(s);
+			Load();
+			list[index] = value;
+			Save();
 		}
 	}
+	[Description("Get index of script. -1 if not found.")]
+	public int IndexOf(string script) => Load().list.IndexOf(script);
+
+	[Description("Test wether the list contains specified script.")]
+	public bool Contains(string script) => Load().list.Contains(script);
+
+	[Browsable(false)]
+	public void CopyTo(string[] array, int index)
+	{
+		Load();
+		list.CopyTo(array, index);
+	}
+
+	[Browsable(false)]
+	public IEnumerator<string> GetEnumerator() => Load().list.GetEnumerator();
+	IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+
+	public override string ToString()
+	{
+		var sb = new StringBuilder();
+		sb.Append("[");
+		for (int i = 0; i < Count; i++)
+		{
+			if (sb.Length >= 64)
+			{
+				sb.Append(", ...");
+				break;
+			}
+			if (i > 0)
+				sb.Append(", ");
+			sb.Append(this[i]);
+		}
+		sb.Append("]");
+		return sb.ToString();
+	}
+
+	bool ICollection<string>.IsReadOnly => false;
 }
