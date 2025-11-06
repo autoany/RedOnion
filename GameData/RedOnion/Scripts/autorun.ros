@@ -1,7 +1,6 @@
 if ship == null
   return
 if ship.parts.count == 1
-//probably ground experiment
-  return
-//TODO: run.main/async with script path
+  return //kerbal or ground experiment
+//note: direct run would block scripts from repl
 system.main def => run ship.prelaunch ? "launch.ros" : "control.ros"
