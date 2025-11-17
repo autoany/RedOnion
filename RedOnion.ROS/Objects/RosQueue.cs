@@ -19,5 +19,6 @@ namespace RedOnion.ROS.Objects
 		public Value Pop() => Dequeue();
 		public bool Empty => Count == 0;
 		public int Length => Count;
+		public int Size => Count;
 	}
 }

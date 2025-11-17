@@ -13,7 +13,8 @@ def control ship, target, x, y
   var wnd = new ui.window false, ui.layout.vertical
   self.wnd = wnd
   guis.add self
-  wnd.x -= (unity.screen.width - 200) / 3
+  wnd.x = 180 - unity.screen.width/2
+  wnd.y = unity.screen.height/2 - 300
   if x != null then wnd.x = x
   if y != null then wnd.y = y
   wnd.title = "Control " + ship.name
@@ -168,7 +169,7 @@ def control ship, target, x, y
     return vector.none
 
   row = blk2.addHorizontal()
-  var bMatchSpeed = xbtn row, "Match Speed", def
+  var bMatchSpeed = xbtn row, "Match Sp.", def
     prevTgtBtn = bMatchSpeed
     var dv = vector.none
     var target = ship.target ?? self.target
@@ -188,10 +189,7 @@ def control ship, target, x, y
         autopilot.throttle = nan
         unlock2.press
     return dv
-  bMatchSpeed.flexWidth = 1
-
-  row = blk2.addHorizontal()
-  var bControlTarget = xbtn row, "Control Target", def
+  xbtn row, "Control", def
     var target = ship.target ?? self.target
     if target != null
       if target is types.part
@@ -205,7 +203,34 @@ def control ship, target, x, y
         reqs.push rq
     prevTgtBtn.press
     return vector.none
-  bControlTarget.flexWidth = 1
+
+  row = blk2.addHorizontal()
+  xbtn row, "None", def
+    ship.target = null
+    prevTgtBtn.press
+    return vector.none
+  xbtn row, "Kerb.", def
+    ship.target = bodies.kerbin
+    prevTgtBtn.press
+    return vector.none
+  xbtn row, "Mun", def
+    ship.target = bodies.mun
+    prevTgtBtn.press
+    return vector.none
+
+  row = blk2.addHorizontal()
+  xbtn row, "Duna", def
+    ship.target = bodies.duna
+    prevTgtBtn.press
+    return vector.none
+  xbtn row, "Eve", def
+    ship.target = bodies.eve
+    prevTgtBtn.press
+    return vector.none
+  xbtn row, "Mus", def
+    ship.target = bodies.minmus
+    prevTgtBtn.press
+    return vector.none
 
   row = blk2.addHorizontal()
   var unlock2 = row.addExclusive2 "UNLOCK", lockdir.bind def
@@ -317,13 +342,13 @@ def control ship, target, x, y
       print "No target"
       bAbort.press
       return
-    var our = ship
-    var its = target
-    var ret = false
+    var our = ship    // our main orbit
+    var its = target  // its main orbit
+    var ret = false   // return, e.g. Mun to Kerbin
     if our.body != its.body
       if our.body.body == its or our.body.body == its.body
       //e.g. Mun to Kerbin, Kerbin to Duna or Mun to Minmus, calculate like if transfering the body itself
-        ret = our.body.body == its
+        ret = our.body.body == its  // e.g. Mun to Kerbin, our=ship, our.body=Mun, its=Kerbin
         our = our.body
         print "Assuming self as " + our.name
         if its.body == null
@@ -350,70 +375,82 @@ def control ship, target, x, y
       print "Warning: our e={0:F5}", our.eccentricity
     if its.eccentricity > 0.01
       print "Warning: its e={0:F5}", its.eccentricity
-    var r1 = our.semiMajorAxis
-    if ret; r1 -= ship.semiMajorAxis
-    var r2 = ret ? its.radius + math.max(10000, its.atm.height) : its.semiMajorAxis
-    var r3 = 0
-    if its is types.body
-      r3 = its.radius
-      if r1 < r2; r3 = -r3
-      r2 += r3
-    var pt = 0.5 * ((r1+r2) / (2*r2))^1.5
-    var ft = pt - math.floor pt
-  //angular distance that target will travel during transfer (if circular)
-    var theta = 360 * ft
-  //angles to universal reference direction
-    var sa = our.lan + our.argumentOfPeriapsis + our.trueAnomaly
-    var ta = its.lan + its.argumentOfPeriapsis + its.trueAnomaly
     var t0 = time()
-  //match angle (+k*360)
-    var ma = math.clamp360 ta+theta-sa-180
-  //angle change rate (inaccurate for eccentric orbits but good for a start)
-    var ar = 360/our.period - 360/its.period
-  //estimated burn time
-    var mt = 5+.5*math.abs(math.sqrt(our.body.mu/r1) * (math.sqrt((2*r2)/(r1+r2)) - 1)
-      ) * ship.mass/math.max 0.1,ship.engines.getThrust()
-  //k closest to zero such that (ma + k*360)/ar >= mt
-    var k = (mt*ar - ma)/360
-  //closest integer
-    if ar < 0 then k = math.floor k
-    else k = math.ceiling k
-  //time to node (exact if both orbits are perfectly circular)
-    var dt = ret ? mt : (ma+k*360)/ar
-  //precise burn vector
-    var t1 = t0+dt
-    var v1 = our.velocityAt(t1).size
-    var p1 = our.positionAt(t1)-our.body.position
-    var s1 = r1
-    r1 = p1.size
-    if ret; r1 -= ship.semiMajorAxis
-  //https://en.wikipedia.org/wiki/Semi-major_and_semi-minor_axes#Orbital_period
-    var t2 = t1 + math.pi*math.sqrt (0.5*(r1+r2))^3.0/its.body.mu
-    var s2 = r2
-    if !ret; for var guard = 0; guard < 10; guard++
-    //this loop is mainly for highly eccentric targets like rescue missions
-      var p2 = its.positionAt(t2)-its.body.position
-      r2 = r3 + p2.size
-      var p3 = p1.normalized * -r2
-      var ad = p2.angle p3, ship.velocity.cross ship.away
-      if r2 < r1; ad = -ad
-      var d2 = ad/(360/math.min(its.period,our.period) - 360/math.max(its.period,our.period))
-      if guard > 3; d2 *= 1.3 - 0.1*guard
-      var d3 = math.abs d2
-      //todo: we may go into the past with this, would need to add one period
-      dt += d2
-      t1 += d2
+    var t1 = t0
+    var dt = 0.0
+    var r1 = our.semiMajorAxis
+    var r2
+    var v1
+    if ret
+      r1 -= our.native.sphereOfInfluence // soi
+      r2 = its.radius + its.atm.height
+      dt = 5+.5*math.abs(math.sqrt(our.body.mu/r1) * (math.sqrt((2*r2)/(r1+r2)) - 1)
+        ) * ship.mass/math.max 0.1,ship.engines.getThrust()
+      t1 = t0 + dt
       v1 = our.velocityAt(t1).size
-      p1 = our.positionAt(t1)-our.body.position
+    else
+      r2 = its.semiMajorAxis
+      var r3 = 0
+      if its is types.body //???
+        r3 = its.radius
+        if r1 < r2; r3 = -r3
+        r2 += r3
+      var pt = 0.5 * ((r1+r2) / (2*r2))^1.5
+      var ft = pt - math.floor pt
+    //angular distance that target will travel during transfer (if circular)
+      var theta = 360 * ft
+    //angles to universal reference direction
+      var sa = our.lan + our.argumentOfPeriapsis + our.trueAnomaly
+      var ta = its.lan + its.argumentOfPeriapsis + its.trueAnomaly
+    //match angle (+k*360)
+      var ma = math.clamp360 ta+theta-sa-180
+    //angle change rate (inaccurate for eccentric orbits but good for a start)
+      var ar = 360/our.period - 360/its.period
+    //estimated burn time
+      var mt = 5+.5*math.abs(math.sqrt(our.body.mu/r1) * (math.sqrt((2*r2)/(r1+r2)) - 1)
+        ) * ship.mass/math.max 0.1,ship.engines.getThrust()
+    //k closest to zero such that (ma + k*360)/ar >= mt
+      var k = (mt*ar - ma)/360
+    //closest integer
+      if ar < 0 then k = math.floor k
+      else k = math.ceiling k
+    //time to node (exact if both orbits are perfectly circular)
+      dt = (ma+k*360)/ar
+    //precise burn vector
+      t1 = t0+dt
+      v1 = our.velocityAt(t1).size
+      var p1 = our.positionAt(t1)-our.body.position
+      var s1 = r1
       r1 = p1.size
-      t2 = t1 + math.pi*math.sqrt (0.5*(r1+r2))^3.0/its.body.mu
-      print "AD: {0,7:F3} D2: {1,7:F1} {2}", ad, d2, time.delta dt
-      if d3 <= 0.5; break
+    //https://en.wikipedia.org/wiki/Semi-major_and_semi-minor_axes#Orbital_period
+      var t2 = t1 + math.pi*math.sqrt (0.5*(r1+r2))^3.0/its.body.mu
+      var s2 = r2
+      for var guard = 0; guard < 10; guard++
+      //this loop is mainly for highly eccentric targets like rescue missions
+        var p2 = its.positionAt(t2)-its.body.position
+        r2 = r3 + p2.size
+        var p3 = p1.normalized * -r2
+        var ad = p2.angle p3, ship.velocity.cross ship.away
+        if r2 < r1; ad = -ad
+        var d2 = ad/(360/math.min(its.period,our.period) - 360/math.max(its.period,our.period))
+        if guard > 3; d2 *= 1.3 - 0.1*guard
+        var d3 = math.abs d2
+        //todo: we may go into the past with this, would need to add one period
+        dt += d2
+        t1 += d2
+        v1 = our.velocityAt(t1).size
+        p1 = our.positionAt(t1)-our.body.position
+        r1 = p1.size
+        t2 = t1 + math.pi*math.sqrt (0.5*(r1+r2))^3.0/its.body.mu
+        print "AD: {0,7:F3} D2: {1,7:F1} {2}", ad, d2, time.delta dt
+        if d3 <= 0.5; break
+      print "R: {0:F0}/{1:F0} ({2:F0}/{3:F0})", r1/1000, r2/1000, s1/1000, s2/1000
+
   //https://en.wikipedia.org/wiki/Orbital_speed#Precise_orbital_speed
     var v2 = math.sqrt our.body.mu*(2/r1-2/(r1+r2))
     var dv = v2 - v1
-    print "R: {0:F0}/{1:F0} ({2:F0}/{3:F0})", r1/1000, r2/1000, s1/1000, s2/1000
     print "V: {0:F0}/{1:F0} ETA: {2}", v1, v2, time.delta dt
+
     if our == ship
       new node t1, dv
     else

@@ -15,6 +15,9 @@ var narrowAltitude = 10*math.round ship.altitude/10+10 // altitude (in m) upto w
 if startAngle > 89
   startAngle = 90
 
+var ctlparts = ship["control"]
+if ctlparts.count == 1
+  ship.controlPart = ctlparts[0]
 
 //: PARAM GUI
 

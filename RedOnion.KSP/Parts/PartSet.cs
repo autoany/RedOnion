@@ -26,7 +26,7 @@ namespace RedOnion.KSP.Parts
 		protected Dictionary<global::Part, Part> cache = new Dictionary<global::Part, Part>();
 
 		[Description("Resource collection of all the parts in this set.")]
-		public ResourceList resources => _resources ?? (_resources = new ResourceList(this));
+		public ResourceList resources => _resources ??= new ResourceList(this);
 		protected ResourceList _resources;
 
 		protected internal override void SetDirty(bool value)
@@ -112,6 +112,24 @@ namespace RedOnion.KSP.Parts
 			}
 		}
 
+		[Description("Get all parts with specified tag.")]
+		public Part[] this[string tag]
+		{
+			get
+			{
+				Update();
+				List<Part> list = null;
+				foreach (var part in this)
+				{
+					if (!part.tags.has(tag))
+						continue;
+					list ??= new List<Part>();
+					list.Add(part);
+				}
+				return list == null ? new Part[0] : list.ToArray();
+			}
+		}
+
 		public override string ToString()
 		{
 			Update();
@@ -152,6 +170,7 @@ namespace RedOnion.KSP.Parts
 				var ctl = ship.native.GetReferenceTransformPart();
 				return ctl == null ? root : this[ctl];
 			}
+			set => ship.native.SetReferenceTransform(value?.native);
 		}
 
 		protected LinkPart _nextDecoupler;
@@ -321,6 +340,11 @@ namespace RedOnion.KSP.Parts
 			while (stages.list.Count <= _ship.currentStage)
 				stages.list.Add(new StagePartSet(_ship, DoRefresh));
 			stages.list.Count = _ship.currentStage + 1;
+			for (int i = 0; i < stages.list.Count; i++)
+			{
+				stages.list[i]._next = i > 0 ? stages.list[i - 1] : null; 
+				stages.list[i]._prev = i + 1 < stages.list.Count ? stages.list[i + 1] : null;
+			}
 
 			Construct(_ship.native.rootPart, null, null);
 
@@ -453,11 +477,9 @@ namespace RedOnion.KSP.Parts
 						break;
 					}
 				}
-				if (self == null)
-					self = new PartBase(PartType.Unknown, _ship, part, parent, decoupler);
+				self ??= new PartBase(PartType.Unknown, _ship, part, parent, decoupler);
 			}
-			if (_root == null)
-				_root = self;
+			_root ??= self;
 			cache[part] = self;
 			list.Add(self);
 			var decoupledin = self.decoupledin;
@@ -466,8 +488,8 @@ namespace RedOnion.KSP.Parts
 			{
 				engines.Add(engine);
 				int upto = engine.ignited ? ship.currentStage : engine.stage;
-				for (int i = decoupledin + 1; i >= upto; i--)
-					stages.list[i].activeEngines.Add(engine);
+				for (int i = decoupledin + 1; i <= upto; i++)
+					stages.list[i].engines.Add(engine);
 			}
 			foreach (var child in part.children)
 				Construct(child, self, decoupler);

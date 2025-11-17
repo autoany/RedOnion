@@ -1,13 +1,5 @@
-using RedOnion.Attributes;
 using RedOnion.Common.Completion;
 using RedOnion.KSP.Utilities;
-using RedOnion.ROS.Utilities;
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
-using System.Text;
 
 namespace RedOnion.KSP.API
 {
@@ -98,6 +90,10 @@ and elements are also properties (`bodies.kerbin`, `bodies.mun`).")]
 
 		[Description("Radius of the body [m].")]
 		public double radius => native.Radius;
+		[Description("Sphere of influence of the body [m].")]
+		public double sphereOfInfluence => native.sphereOfInfluence;
+		[Description("Sphere of influence of the body [m].")]
+		public double soi => native.sphereOfInfluence;
 		[Description("Mass of the body [kg].")]
 		public double mass => native.Mass;
 		[Description("Standard gravitational parameter (μ = GM) [m³/s²]")]

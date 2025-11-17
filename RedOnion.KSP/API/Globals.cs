@@ -6,6 +6,7 @@ global using System.Collections.Generic;
 global using System.Linq;
 global using System.Linq.Expressions;
 global using System.Reflection;
+global using System.Text;
 global using RedOnion.Attributes;
 global using RedOnion.Collections;
 global using RedOnion.Debugging;
@@ -14,6 +15,7 @@ global using RedOnion.ROS;
 global using RedOnion.KSP.API;
 global using UnityEngine;
 global using Time = RedOnion.KSP.API.Time;
+global using static System.FormattableString;
 
 using RedOnion.KSP.Namespaces;
 using RedOnion.KSP.ReflectionUtil;
@@ -117,22 +119,8 @@ public static class Globals
 	[Description("Target of active ship. Null if none.")]
 	public static object target
 	{
-		get
-		{
-			if (!HighLogic.LoadedSceneIsFlight)
-				return null;
-			var target = FlightGlobals.fetch.VesselTarget;
-			if (target is CelestialBody body)
-				return bodies[body];
-			if (target is Vessel vessel)
-				return Ship.FromVessel(vessel);
-			if (target is PartModule dock)
-			{
-				var part = dock.part;
-				return Ship.FromVessel(part.vessel).parts[part];
-			}
-			return null;
-		}
+		get => ship.target;
+		set => ship?.SetTarget(value);
 	}
 
 	#endregion

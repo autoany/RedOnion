@@ -252,6 +252,14 @@ namespace RedOnion.ROS
 						intIndexSet = (obj, idx, v) => ((IList)obj)[idx] = v.Box();
 					}
 				}
+
+				if (typeof(Array).IsAssignableFrom(type) && idict.TryGetValue("length", out var lenIdx))
+				{
+					if (!idict.ContainsKey("count"))
+						idict["count"] = lenIdx;
+					if (!idict.ContainsKey("size"))
+						idict["size"] = lenIdx;
+				}
 			}
 
 			public override bool Call(ref Value result, object self, in Arguments args)

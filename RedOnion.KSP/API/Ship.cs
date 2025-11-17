@@ -216,7 +216,26 @@ public class Ship : ISpaceObject, IDisposable
 			}
 			return null;
 		}
+		set
+		{
+			if (!HighLogic.LoadedSceneIsFlight)
+				return;
+			if (native != FlightGlobals.ActiveVessel)
+				return;
+			if (value == null)
+				FlightGlobals.fetch.SetVesselTarget(null, true);
+			else if (value is ITargetable target)
+				FlightGlobals.fetch.SetVesselTarget(target, true);
+			else if (value is SpaceBody body)
+				FlightGlobals.fetch.SetVesselTarget(body.native, true);
+			else if (value is Ship ship)
+				FlightGlobals.fetch.SetVesselTarget(ship.native, true);
+			else if (value is DockingPort dock)
+				FlightGlobals.fetch.SetVesselTarget(dock.Module, true);
+		}
 	}
+	[Browsable(false)]
+	public void SetTarget(object value) => target = value;
 	#endregion
 
 	#region Autopilot
@@ -247,7 +266,11 @@ public class Ship : ISpaceObject, IDisposable
 	[Description("Root part (same as `parts.root`).")]
 	public PartBase root => parts.root;
 	[Description("Controlling part (same as `parts.control`).")]
-	public PartBase controlPart => parts.control;
+	public PartBase controlPart
+	{
+		get => parts.control;
+		set => parts.control = value;
+	}
 	[Description("One of the decouplers that will get activated by nearest stage. (Same as `Parts.NextDecoupler`.)")]
 	public LinkPart nextDecoupler => parts.nextDecoupler;
 	[Description("Stage number of the nearest decoupler or -1. (Same as `Parts.NextDecouplerStage`.)")]
@@ -268,9 +291,11 @@ public class Ship : ISpaceObject, IDisposable
 	public ReadOnlyList<Sensor> sensors => parts.sensors;
 	[Description("All solar panels.")]
 	public SolarPanelList panels => parts.panels;
-	[WorkInProgress, Description("All science modules.")]
+	[Description("All science modules.")]
 	public ReadOnlyList<PartScience> science => parts.science;
 
+	[Description("Get all parts with specified tag.")]
+	public PartBase[] this[string tag] => parts[tag];
 	#endregion
 
 	#region Basic properties
