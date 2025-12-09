@@ -32,7 +32,7 @@ namespace RedOnion.KSP.API
 			}
 		}
 
-		[Unsafe, Description("[KSP API](https://kerbalspaceprogram.com/api/class_maneuver_node.html)")]
+		[Unsafe, KspApi("class_maneuver_node.html")]
 		public ManeuverNode native { get; private set; }
 		public static implicit operator ManeuverNode(Node node) => node?.native;
 

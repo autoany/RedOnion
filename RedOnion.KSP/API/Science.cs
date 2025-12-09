@@ -102,14 +102,14 @@ public static class Science
 	[Description("Science subject.")]
 	public class Subject
 	{
-		[Unsafe, Description("[KSP API](https://kerbalspaceprogram.com/api/class_science_subject.html)")]
+		[Unsafe, KspApi("class_science_subject.html")]
 		public ScienceSubject native { get; private set; }
 		public static implicit operator ScienceSubject(Subject sub) => sub?.native;
 
 		[Description("Subject ID.")]
 		public string id => native.id;
 
-		[Unsafe, Description("[KSP API](https://kerbalspaceprogram.com/api/class_science_experiment.html)")]
+		[Unsafe, KspApi("class_science_experiment.html")]
 		public ScienceExperiment experiment { get; }
 
 		[Description("Title of the experiment")]

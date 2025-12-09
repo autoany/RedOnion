@@ -54,8 +54,6 @@
     <Compile Include="Utilities\MultiValueDictionary.cs" />
     <Compile Include="Utilities\ReferenceEqualityComparer.cs" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Completion\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

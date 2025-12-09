@@ -181,8 +181,7 @@ public class Ship : ISpaceObject, IDisposable
 
 	#region Native, name and target
 
-	[Unsafe, Description("Native `Vessel` for unrestricted access to [KSP API](https://kerbalspaceprogram.com/api/class_vessel.html)."
-		+ " Same as `FlightGlobals.ActiveVessel` if accessed through global `ship`.")]
+	[Unsafe, KspApi("class_vessel.html", "Native `Vessel` for unrestricted access. Same as `FlightGlobals.ActiveVessel` if accessed through global `ship`.")]
 	public Vessel native { get; private set; }
 	public static implicit operator Vessel(Ship ship) => ship?.native;
 

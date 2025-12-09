@@ -32,42 +32,44 @@ def refresh
     row.maxval = -1
 //update
   for var sci in list ship.science // make a copy in case we get interrupted
-    var ready = sci.ready
-    if compact && !(ready && sci.value >= 0.05)
-      continue
-    var has = science.contains(sci)
-    if compact and has
-      continue
-    var row = dict[sci.experimentId]
-    if row == null
-      row = new object
-      row.id = sci.experimentId
-      row.sci = sci
-      row.panel = rowbox.addHorizontal()
-      row.panel.flexWidth = 1
-      row.panel.width = 268
-      row.label = row.panel.addLabel sci.experimentId
-      row.label.flexWidth = 1
-      row.value = row.panel.addLabel()
-      row.value.width = 60
-      row.button = row.panel.addButton ready ? "DO" : "---", row_click
-      row.button.width = 40
-      row.button.tag = row
+    try
+      if compact && !(sci.ready && sci.value >= 0.05)
+        continue
+      var has = science.contains(sci)
+      if compact and has
+        continue
+      var row = dict[sci.experimentId]
+      if row == null
+        row = new object
+        row.id = sci.experimentId
+        row.sci = sci
+        row.panel = rowbox.addHorizontal()
+        row.panel.flexWidth = 1
+        row.panel.width = 268
+        row.label = row.panel.addLabel sci.experimentTitle
+        row.label.width = 168
+        row.value = row.panel.addLabel()
+        row.value.width = 60
+        row.button = row.panel.addButton sci.ready ? "DO" : "---", row_click
+        row.button.width = 40
+        row.button.tag = row
+        row.present = true
+        row.maxval = -1
+        dict[row.id] = row
+        rows.add row
       row.present = true
-      row.maxval = -1
-      dict[row.id] = row
-      rows.add row
-    row.present = true
-    row.label.fontStyle = has ? ui.fontStyle.italic : ui.fontStyle.normal
-    var avail = sci.available
-    var val = avail ? has ? sci.nextValue : sci.value : -0.1
-    if val > row.maxval
-      row.sci = sci
-      row.maxval = val
-      row.value.text = avail ? (sci.capacity >= 100 ?
-        "{0:F1}/{1:F0}" : "{0:F1}/{1:F1}").format val, sci.capacity :
-        sci.astate == "unavailable" ? "N/A" : sci.astate
-      row.value.fontStyle = avail ? ui.fontStyle.normal : ui.fontStyle.italic
+      row.label.fontStyle = has ? ui.fontStyle.italic : ui.fontStyle.normal
+      var avail = sci.available
+      var val = avail ? has ? sci.nextValue : sci.value : -0.1
+      if val > row.maxval
+        row.sci = sci
+        row.maxval = val
+        row.value.text = avail ? (sci.capacity >= 100 ?
+          "{0:F1}/{1:F0}" : "{0:F1}/{1:F1}").format val, sci.capacity :
+          sci.astate == "unavailable" ? "N/A" : sci.astate
+        row.value.fontStyle = avail ? ui.fontStyle.normal : ui.fontStyle.italic
+    catch var e
+      print "Refresh {0}: {1}", sci.experimentId, e
   for var i = 0; i < rows.count
     var row = rows[i]
     if !row.present
@@ -138,7 +140,7 @@ var need = btns.addButton "Gather >= 0.1", def
 try
 
   var subs = null // finally retains try-context but we want to call refresh first
-  tryRefresh
+  xcomp.pressed = true // calls tryRefresh
   subs = science.situationChanged tryRefresh
   wnd.show
   while !done

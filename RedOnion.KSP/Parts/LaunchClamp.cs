@@ -21,7 +21,7 @@ namespace RedOnion.KSP.Parts
 			|| name.Equals("launchClamp", StringComparison.OrdinalIgnoreCase)
 			|| base.istype(name);
 
-		[Unsafe, Description("[KSP API](https://kerbalspaceprogram.com/api/class_launch_clamp.html)")]
+		[Unsafe, KspApi("class_launch_clamp.html")]
 		public global::LaunchClamp Module => module;
 		protected override bool GetStagingEnabled() => module.StagingEnabled();
 	}

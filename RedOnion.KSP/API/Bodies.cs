@@ -52,7 +52,7 @@ and elements are also properties (`bodies.kerbin`, `bodies.mun`).")]
 	[Description("Celestial body. (`SpaceBody` selected not to conflict with KSP `CelestialBody`.)")]
 	public class SpaceBody : ISpaceObject
 	{
-		[Unsafe, Description("[KSP API](https://kerbalspaceprogram.com/api/class_celestial_body.html)")]
+		[Unsafe, KspApi("class_celestial_body.html")]
 		public CelestialBody native { get; private set; }
 		public static implicit operator CelestialBody(SpaceBody body) => body?.native;
 
@@ -115,14 +115,18 @@ and elements are also properties (`bodies.kerbin`, `bodies.mun`).")]
 
 			[Description("Is there any atmosphere (true on Kerbin, false on Moon).")]
 			public bool exists => native?.atmosphere ?? false;
+			[Description("Is there any atmosphere (true on Kerbin, false on Moon).")]
+			public bool has => native?.atmosphere ?? false;
+
 			[Description("Is there oxygen in the atmosphere.")]
 			public bool oxygen => native?.atmosphereContainsOxygen ?? false;
-			[Description("Depth/height of the atmosphere.")]
-			public double depth => native?.atmosphereDepth ?? double.NaN;
-			[Description("Depth/height of the atmosphere.")]
-			public double height => native?.atmosphereDepth ?? double.NaN;
 
-			[Description("Used when there is no body/ship. Returns false/NaN in properties.")]
+			[Description("Depth/height of the atmosphere.")]
+			public double depth => native?.atmosphereDepth ?? 0.0;
+			[Description("Depth/height of the atmosphere.")]
+			public double height => native?.atmosphereDepth ?? 0.0;
+
+			[Description("Used when there is no body/ship. Returns false/0.0 in properties.")]
 			public static readonly Atmosphere none = new Atmosphere();
 		}
 

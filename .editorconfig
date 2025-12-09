@@ -1,11 +1,14 @@
 root = true
 
-[*.cs]
+[*]
 charset = utf-8
+end_of_line = lf
+insert_final_newline = false
 indent_style = tab
 indent_size = 4
-insert_final_newline = true
+tab_width = 4
 
+[*.cs]
 csharp_indent_block_contents = true
 csharp_indent_braces = false
 csharp_indent_case_contents = true

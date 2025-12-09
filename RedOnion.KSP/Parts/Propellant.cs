@@ -155,9 +155,9 @@ namespace RedOnion.KSP.Parts
 		// not what I was searching for, we need Engine.ignitionThreshold or something like that
 		public double minimal { get; protected internal set; }
 
-		[Unsafe, Description("[KSP API](https://kerbalspaceprogram.com/api/class_propellant.html). First in the list if aggregate.")]
+		[Unsafe, KspApi("class_propellant.html", "First in the list if aggregate.")]
 		public global::Propellant native => list[0];
-		[Unsafe, Description("[KSP API](https://kerbalspaceprogram.com/api/class_part_resource_definition.html). First in the list if aggregate.")]
+		[Unsafe, KspApi("class_part_resource_definition.html", "First in the list if aggregate.")]
 		public PartResourceDefinition resourceDef => native.resourceDef;
 		[Description("Flow mode of the propellant. First in the list if aggregate, which works for most propellants, but may be random when you combine e.g. Karbonite SRB's with normal engines.")]
 		public ResourceFlowMode flowMode => native.GetFlowMode();

@@ -1,11 +1,3 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Runtime.Serialization;
-using RedOnion.Collections;
-using RedOnion.ROS.Parsing;
-
 namespace RedOnion.ROS
 {
 	#region Error (ParseError and RuntimeError)

@@ -10,6 +10,7 @@ def control ship, target, x, y
   self.target = target
   self.dirsubs = null // system.update subscriptions for direction manipulation
   self.stgsubs = null // system.idle subscription for staging
+  self.vecdraw  = null // vector.draw showing target
   var wnd = new ui.window false, ui.layout.vertical
   self.wnd = wnd
   guis.add self
@@ -36,9 +37,9 @@ def control ship, target, x, y
     return btn
   var mObt = mbtn "OBT" // orbital steering
   var mSrf = mbtn "SRF" // surface steering
-  var mTgt = mbtn "TGT" // target steering and utils
-  var mMan = mbtn "MAN" // maneuver execution
-  var mNde = mbtn "NDE" // nodes only (+ "EXEC" button)
+  var mTgt = mbtn "TGT" // targeting
+  var mMan = mbtn "MAN" // maneuvers
+  var mUtl = mbtn "UTL" // utilities
   mObt.pressed = true
 
 //main content (buttons and footer)
@@ -142,9 +143,15 @@ def control ship, target, x, y
 
   row = blk1.addHorizontal()
   var unlock = row.addExclusive2 "UNLOCK", lockdir.bind null
+  unlock.width = 80
   unlock.flexWidth = 1
   unlock.flexHeight = 1
   unlock.pressed = true
+  var stgonly = row.addExclusive2 "AutoStage", lockdir.bind def
+    return vector.none
+  stgonly.width = 80
+  stgonly.flexWidth = 1
+  stgonly.flexHeight = 1
 
 //target buttons
   var blk2 = btns.addVertical()
@@ -207,6 +214,7 @@ def control ship, target, x, y
   row = blk2.addHorizontal()
   xbtn row, "None", def
     ship.target = null
+    self.target = null
     prevTgtBtn.press
     return vector.none
   xbtn row, "Kerb.", def
@@ -241,9 +249,6 @@ def control ship, target, x, y
   var prevTgtBtn = unlock2
 
 //maneuvers
-//todo: join "MAN" and "NDE" into one by keeping button pressed together with EXEC
-//..... possibly doing more in that state (like auto-incline after hohmann)
-//todo: add new mode-button for options like limiting auto-staging
   var blk3 = btns.addVertical()
   blk3.visible = false
   row = blk3.addHorizontal()
@@ -256,9 +261,7 @@ def control ship, target, x, y
     autopilot.killRot = true
     autopilot.userRollFactor = 1
   def execSteer
-    if bAbort.pressed
-      return vector.none
-    unless mMan.pressed or mNde.pressed
+    if bAbort.pressed or not mMan.pressed
       return vector.none
     var nde = node.next
     if nde == null
@@ -310,7 +313,7 @@ def control ship, target, x, y
       print "Encounter with {0} detected", body.name
       print "ETA: {0}, UT: {1}", tm - time(), tm
     else
-      var tm = time.now
+      var tm = time.now + 5
       var body = ship.body
       if ship.eccentricity < 0.001
         print "Eccentricity is {0:F6}, adjusting now", ship.eccentricity
@@ -327,35 +330,77 @@ def control ship, target, x, y
       var dv = math.sqrt(body.mu / pos.size) * pos.cross(vel.cross pos).normalized - vel
       new node tm, dv
       print "ETA: {0}, UT: {1}", tm - time(), tm
-    if mMan.pressed
-      bExec.press
-    else bAbort.press
+    bAbort.press
 
   row = blk3.addHorizontal()
-  var bHohm = cbtn row, "Hohmann", def
+  def trans
     var target = ship.target
     if target == null
-      target = body.body
-    if target == null
-      target = ship.target
-    if target == null
-      print "No target"
+
+      var moon = ship.body                        // Mun
+      var home = moon.body                        // Kerbin
+      if home == null
+        print "Trying to hit the Sun/Kerbol?"
+        bAbort.press
+        return
+
+      // create the node to exit SOI at 270° with +30% extra impulse
+      var r1 = ship.semiMajorAxis
+      var r2 = home.radius + math.max home.atmosphere.height*3/5, 20000
+      var v1 = math.sqrt moon.mu/r1
+      var v2 = math.sqrt moon.mu*(2/r1-2/(r1+moon.soi))
+      var dv = v2 - v1
+      var dt = ship.period * math.clamp360(270 - ship.away.angle(home.position - moon.position, vector.up))/360
+      while node.next != null
+        node.next.remove
+        wait
+      var nd = node time.now + dt, dv*1.3
+
+      // try to improve
+      var tpe = r2 - home.radius
+      var tstep = math.clamp ship.period/30, 1, 3600
+      var dstep = 1
+      for var g = 0; g < 100 and dstep >= 0.005; g++
+        var steps = 0
+        var ppe = nd.orbit.next.periapsis
+        var pe
+        do
+          pe = ppe
+          nd.time += tstep
+          steps++
+        while (ppe = nd.orbit.next.periapsis) < pe
+        nd.time -= tstep
+        tstep = math.max 1, tstep * (1 - 0.5^steps)
+        print "{0}. pe: {1:F3}, dt: {2}, step: {3}, steps: {4}", g,
+          pe/1000, nd.time - time.now, time.delta(tstep), steps
+        ppe = pe
+        if pe > tpe
+          steps = 0
+          var spe = pe - 0.2*(pe - tpe)
+          do
+            pe = ppe
+            nd.prograde += dstep
+            steps++
+          while (ppe = nd.orbit.next.periapsis) >= spe
+          dstep *= 1 - 0.5^steps
+        else
+          steps = 0
+          do
+            pe = ppe
+            nd.prograde += dstep
+            steps++
+          while (ppe = nd.orbit.next.periapsis) < tpe
+          if steps > 1
+            dstep *= 1 - 0.5^steps
+        print "{0}. pe: {1:F3}, dv: {2:F3}, step: {3:F3}, steps: {4}", g,
+          ppe/1000, nd.prograde, dstep, steps
       bAbort.press
       return
+
     var our = ship    // our main orbit
     var its = target  // its main orbit
-    var ret = false   // return, e.g. Mun to Kerbin
     if our.body != its.body
-      if our.body.body == its or our.body.body == its.body
-      //e.g. Mun to Kerbin, Kerbin to Duna or Mun to Minmus, calculate like if transfering the body itself
-        ret = our.body.body == its  // e.g. Mun to Kerbin, our=ship, our.body=Mun, its=Kerbin
-        our = our.body
-        print "Assuming self as " + our.name
-        if its.body == null
-          print "Trying to hit the Sun/Kerbol?"
-          bAbort.press
-          return
-      else if its.body != null and its.body.body != null and our.body.body == its.body.body
+      if its.body != null and its.body.body != null and our.body.body == its.body.body
       //e.g. Kerbin to Ike, redirect to Duna
         our = our.body
         its = its.body
@@ -375,76 +420,65 @@ def control ship, target, x, y
       print "Warning: our e={0:F5}", our.eccentricity
     if its.eccentricity > 0.01
       print "Warning: its e={0:F5}", its.eccentricity
+
     var t0 = time()
-    var t1 = t0
-    var dt = 0.0
     var r1 = our.semiMajorAxis
-    var r2
-    var v1
-    if ret
-      r1 -= our.native.sphereOfInfluence // soi
-      r2 = its.radius + its.atm.height
-      dt = 5+.5*math.abs(math.sqrt(our.body.mu/r1) * (math.sqrt((2*r2)/(r1+r2)) - 1)
-        ) * ship.mass/math.max 0.1,ship.engines.getThrust()
-      t1 = t0 + dt
+    var r2 = its.semiMajorAxis
+    var r3 = 0
+    if its is types.body //???
+      r3 = its.radius
+      if r1 < r2; r3 = -r3
+      r2 += r3
+    var pt = 0.5 * ((r1+r2) / (2*r2))^1.5
+    var ft = pt - math.floor pt
+  //angular distance that target will travel during transfer (if circular)
+    var theta = 360 * ft
+  //angles to universal reference direction
+    var sa = our.lan + our.argumentOfPeriapsis + our.trueAnomaly
+    var ta = its.lan + its.argumentOfPeriapsis + its.trueAnomaly
+  //match angle (+k*360)
+    var ma = math.clamp360 ta+theta-sa-180
+  //angle change rate (inaccurate for eccentric orbits but good for a start)
+    var ar = 360/our.period - 360/its.period
+  //estimated burn time
+    var mt = 5+.5*math.abs(math.sqrt(our.body.mu/r1) * (math.sqrt((2*r2)/(r1+r2)) - 1)
+      ) * ship.mass/math.max 0.1,ship.engines.getThrust()
+  //k closest to zero such that (ma + k*360)/ar >= mt
+    var k = (mt*ar - ma)/360
+  //closest integer
+    if ar < 0 then k = math.floor k
+    else k = math.ceiling k
+  //time to node (exact if both orbits are perfectly circular)
+    var dt = (ma+k*360)/ar
+  //precise burn vector
+    var t1 = t0+dt
+    var v1 = our.velocityAt(t1).size
+    var p1 = our.positionAt(t1)-our.body.position
+    var s1 = r1
+    var r1 = p1.size
+  //https://en.wikipedia.org/wiki/Semi-major_and_semi-minor_axes#Orbital_period
+    var t2 = t1 + math.pi*math.sqrt (0.5*(r1+r2))^3.0/its.body.mu
+    var s2 = r2
+    for var guard = 0; guard < 10; guard++
+    //this loop is mainly for highly eccentric targets like rescue missions
+      var p2 = its.positionAt(t2)-its.body.position
+      r2 = r3 + p2.size
+      var p3 = p1.normalized * -r2
+      var ad = p2.angle p3, ship.velocity.cross ship.away
+      if r2 < r1; ad = -ad
+      var d2 = ad/(360/math.min(its.period,our.period) - 360/math.max(its.period,our.period))
+      if guard > 3; d2 *= 1.3 - 0.1*guard
+      var d3 = math.abs d2
+      //todo: we may go into the past with this, would need to add one period
+      dt += d2
+      t1 += d2
       v1 = our.velocityAt(t1).size
-    else
-      r2 = its.semiMajorAxis
-      var r3 = 0
-      if its is types.body //???
-        r3 = its.radius
-        if r1 < r2; r3 = -r3
-        r2 += r3
-      var pt = 0.5 * ((r1+r2) / (2*r2))^1.5
-      var ft = pt - math.floor pt
-    //angular distance that target will travel during transfer (if circular)
-      var theta = 360 * ft
-    //angles to universal reference direction
-      var sa = our.lan + our.argumentOfPeriapsis + our.trueAnomaly
-      var ta = its.lan + its.argumentOfPeriapsis + its.trueAnomaly
-    //match angle (+k*360)
-      var ma = math.clamp360 ta+theta-sa-180
-    //angle change rate (inaccurate for eccentric orbits but good for a start)
-      var ar = 360/our.period - 360/its.period
-    //estimated burn time
-      var mt = 5+.5*math.abs(math.sqrt(our.body.mu/r1) * (math.sqrt((2*r2)/(r1+r2)) - 1)
-        ) * ship.mass/math.max 0.1,ship.engines.getThrust()
-    //k closest to zero such that (ma + k*360)/ar >= mt
-      var k = (mt*ar - ma)/360
-    //closest integer
-      if ar < 0 then k = math.floor k
-      else k = math.ceiling k
-    //time to node (exact if both orbits are perfectly circular)
-      dt = (ma+k*360)/ar
-    //precise burn vector
-      t1 = t0+dt
-      v1 = our.velocityAt(t1).size
-      var p1 = our.positionAt(t1)-our.body.position
-      var s1 = r1
+      p1 = our.positionAt(t1)-our.body.position
       r1 = p1.size
-    //https://en.wikipedia.org/wiki/Semi-major_and_semi-minor_axes#Orbital_period
-      var t2 = t1 + math.pi*math.sqrt (0.5*(r1+r2))^3.0/its.body.mu
-      var s2 = r2
-      for var guard = 0; guard < 10; guard++
-      //this loop is mainly for highly eccentric targets like rescue missions
-        var p2 = its.positionAt(t2)-its.body.position
-        r2 = r3 + p2.size
-        var p3 = p1.normalized * -r2
-        var ad = p2.angle p3, ship.velocity.cross ship.away
-        if r2 < r1; ad = -ad
-        var d2 = ad/(360/math.min(its.period,our.period) - 360/math.max(its.period,our.period))
-        if guard > 3; d2 *= 1.3 - 0.1*guard
-        var d3 = math.abs d2
-        //todo: we may go into the past with this, would need to add one period
-        dt += d2
-        t1 += d2
-        v1 = our.velocityAt(t1).size
-        p1 = our.positionAt(t1)-our.body.position
-        r1 = p1.size
-        t2 = t1 + math.pi*math.sqrt (0.5*(r1+r2))^3.0/its.body.mu
-        print "AD: {0,7:F3} D2: {1,7:F1} {2}", ad, d2, time.delta dt
-        if d3 <= 0.5; break
-      print "R: {0:F0}/{1:F0} ({2:F0}/{3:F0})", r1/1000, r2/1000, s1/1000, s2/1000
+      t2 = t1 + math.pi*math.sqrt (0.5*(r1+r2))^3.0/its.body.mu
+      print "AD: {0,7:F3} D2: {1,7:F1} {2}", ad, d2, time.delta dt
+      if d3 <= 0.5; break
+    print "R: {0:F0}/{1:F0} ({2:F0}/{3:F0})", r1/1000, r2/1000, s1/1000, s2/1000
 
   //https://en.wikipedia.org/wiki/Orbital_speed#Precise_orbital_speed
     var v2 = math.sqrt our.body.mu*(2/r1-2/(r1+r2))
@@ -452,14 +486,55 @@ def control ship, target, x, y
     print "V: {0:F0}/{1:F0} ETA: {2}", v1, v2, time.delta dt
 
     if our == ship
-      new node t1, dv
+
+      var nd = new node t1, dv
+
+      if bTranPro.pressed and its is types.body
+        var tpe = math.max its.atm.height + 10000, 20000
+        var tstep = math.clamp ship.period/30, 1, 3600
+        var dstep = 1
+        for var g = 0; g < 100 and dstep >= 0.005; g++
+          var steps = 0
+          do
+            nd.prograde -= dstep
+            steps++
+          while nd.orbit.next.periapsis < tpe
+          nd.prograde += dstep
+          dstep *= 1 - 0.5^steps
+          var ppe = nd.orbit.next.periapsis
+          print "{0}. pe: {1:F3}, dv: {2:F1}, step: {3:F3}, steps: {4}", g,
+            ppe/1000, nd.prograde, dstep, steps
+          steps = 0
+          var pe
+          do
+            pe = ppe
+            nd.time -= tstep
+            steps++
+          while (ppe = nd.orbit.next.periapsis) < pe
+          nd.time += tstep
+          tstep = math.max 1, tstep * (1 - 0.5^steps)
+          print "{0}. pe: {1:F3}, dt: {2}, step: {3:F1}, steps: {4}", g,
+            pe/1000, nd.time - time.now, time.delta(tstep), steps
+
+      else if bTranRet.pressed and its is types.body
+        var tpe = math.max its.atm.height + 10000, 20000
+        var tstep = math.clamp ship.period/30, 1, 3600
+        var dstep = 1
+        for var g = 0; g < 30 and dstep >= 0.005; g++
+          do
+            nd.prograde += dstep
+          while nd.orbit.next.periapsis < tpe
+          while dstep >= 0.005 and nd.orbit.next.periapsis > tpe
+            dstep *= 0.5
+            nd.prograde -= dstep
+
     else
     //hyperbolic departure magnitude
       var pb = math.sqrt(dv^2+2*body.mu/ship.semiMajorAxis) - math.sqrt(body.mu/ship.semiMajorAxis)
       var mt = 5+.5*pb*ship.mass/math.max(0.1,ship.engines.getThrust())
     //correction for optimal angle
       var sa = ship.velocityAt(t1).angle body.velocityAt(t1), ship.north
-      var da = math.deg.asin(1/(1+ship.semiMajorAxis*dv^2/body.mu))
+      var da = math.deg.asin 1/(1+ship.semiMajorAxis*dv^2/body.mu)
       if r2 < r1; da += 180
       var ca = math.clamp360 -da-sa
     //finalize eta and add node
@@ -479,10 +554,8 @@ def control ship, target, x, y
       print "Departure correction: {0:F2}°, {1}", dc, dt
       if nd.eta + dt < mt; dt += ship.period
       nd.time += dt
-    
-    if mMan.pressed
-      bExec.press
-    else bAbort.press
+    bAbort.press
+  var bTrans = cbtn row, "Transfer", trans
 
   var bIncline = cbtn row, "Incline", def
     while node.next != null
@@ -536,15 +609,33 @@ def control ship, target, x, y
 
     print "DT: {0,5:F0} TA: {1,3:F0}", dt, ta
     new node t1, dv
-    
-    if mMan.pressed
-      bExec.press
-    else bAbort.press
+    bAbort.press
+
+  row = blk3.addHorizontal()
+  var bTranPro = cbtn row, "T-Progr", trans
+  var bTranRet = cbtn row, "T-Retro", trans
     
   row = blk3.addHorizontal()
-  var bAbort = xbtn row, "ABORT"
+  var bAbort = cbtn row, "ABORT", def
+    time.warp.cancel
+    
   bAbort.flexWidth = 1
   bAbort.flexHeight = 1
+
+//utilities
+  var blk4 = btns.addVertical()
+  blk4.visible = false
+  row = blk4.addHorizontal()
+  var bScience = xbtn row, "Science", def
+    system.main def => run "science.ros"
+    bScience.pressed = false
+    return vector.none
+  var bLaunch = xbtn row, "Launch", def
+    system.main def => run "launch.ros"
+    bLaunch.pressed = false
+    return vector.none
+  row = blk4.addHorizontal()
+  row.flexHeight = 1
 
 //startup selection
   if "control_dir" in global
@@ -576,38 +667,60 @@ def control ship, target, x, y
 
 //main loop
   self.main = def
-    if self.terminate
-      if self.dirsubs != null
-        self.dirsubs.remove
-        self.dirsubs = null
-      if self.stgsubs != null
-        self.stgsubs.remove
-        self.stgsubs = null
+    if terminate
+      if dirsubs != null
+        dirsubs.remove
+        dirsubs = null
+      if stgsubs != null
+        stgsubs.remove
+        stgsubs = null
+      if vecdraw != null
+        vecdraw.dispose
+        vecdraw = null
       autopilot.disable()
       wnd.dispose()
       guis.remove self
       return false
     if mObt.pressed and ship.altitude < math.max atmosphere.height/4, 1000
       mSrf.pressed = true
-    if !blk1.visible and (mObt.pressed or mSrf.pressed)
+    if (mObt.pressed or mSrf.pressed) and !blk1.visible
       blk2.visible = false
       blk3.visible = false
+      blk4.visible = false
       blk1.visible = true
       unlock.press
-    if !blk2.visible and mTgt.pressed
-      blk1.visible = false
-      blk3.visible = false
-      blk2.visible = true
-      unlock2.press
-    if !blk3.visible and (mMan.pressed or mNde.pressed)
+    if mTgt.pressed
+      if !blk2.visible
+        blk1.visible = false
+        blk3.visible = false
+        blk4.visible = false
+        blk2.visible = true
+        unlock2.press
+        vecdraw = new vector.draw
+        vecdraw.scale = 0.9
+        vecdraw.width = 0.1
+      vecdraw.vector = (ship.target ?? self.target ?? ship.body).position
+      if global.ship == ship
+        vecdraw.show
+      else vecdraw.hide
+    else if vecdraw != null
+      vecdraw.dispose
+      vecdraw = null
+    if mMan.pressed and !blk3.visible 
       blk1.visible = false
       blk2.visible = false
+      blk4.visible = false
       blk3.visible = true
       lockdir //null, null - disable current
       bAbort.press
+    if mUtl.pressed and !blk4.visible
+      blk1.visible = false
+      blk2.visible = false
+      blk3.visible = false
+      blk4.visible = true
       
     //remember last target
-    self.target = ship.target ?? self.target
+    self.target = ship.target ?? target
     //visual hint which ship is active
     wnd.alpha = ship == global.ship ? 0.9 : 0.7
     return true

@@ -1,33 +1,28 @@
-using RedOnion.ROS.Objects;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+namespace RedOnion.ROS.Functions;
 
-namespace RedOnion.ROS.Functions
+public class Print(UserObject baseClass) : UserObject("Print", baseClass)
 {
-	public class Print : UserObject
+	public override bool Call(ref Value result, object self, in Arguments args)
 	{
-		public Print(UserObject baseClass) : base("Print", baseClass) { }
-
-		public override bool Call(ref Value result, object self, in Arguments args)
+		if (args.Length == 0)
 		{
-			if (args.Length == 0)
-			{
-				args.Processor?.Print?.Invoke("");
-				result = "";
-				return true;
-			}
-			var msg = args[0].ToStr();
-			if (args.Length == 1)
-			{
-				args.Processor?.Print?.Invoke(msg);
-				result = msg;
-				return true;
-			}
+			args.Processor?.Print?.Invoke("");
+			result = "";
+			return true;
+		}
+		var msg = args[0].ToStr();
+		if (args.Length == 1)
+		{
+			args.Processor?.Print?.Invoke(msg);
+			result = msg;
+			return true;
+		}
+		for (int i = 0; ; )
+		{
+			msg.IndexOf('{', i);
 			var call = new object[args.Length-1];
-			for (int i = 1; i < args.Length; i++)
-				call[i-1] = args[i].Box();
+			for (int j = 1; j < args.Length; j++)
+				call[j-1] = args[j].Box();
 			msg = string.Format(Value.Culture, msg, call);
 			args.Processor?.Print?.Invoke(msg);
 			result = msg;

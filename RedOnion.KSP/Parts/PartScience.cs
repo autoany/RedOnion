@@ -24,7 +24,9 @@ namespace RedOnion.KSP.Parts
 		[Description("Module needs some time before operation.")]
 		cooldown,
 		[Description("Unknown state, probably cannot perform experiments now.")]
-		unknown
+		unknown,
+		[Description("Unknown state, exception in API.")]
+		error,
 	}
 
 	[Description("Available science through one part.")]
@@ -32,17 +34,17 @@ namespace RedOnion.KSP.Parts
 	{
 		[Description("The part this science belongs to.")]
 		public PartBase part { get; }
-		[Unsafe, Description("[KSP API](https://kerbalspaceprogram.com/api/class_module_science_experiment.html)")]
+		[Unsafe, KspApi("class_module_science_experiment.html")]
 		public ModuleScienceExperiment native { get; }
 		public static implicit operator ModuleScienceExperiment(PartScience sci) => sci?.native;
 
-		[Unsafe, Description("[KSP API](https://kerbalspaceprogram.com/api/class_science_experiment.html)")]
+		[Unsafe, KspApi("class_science_experiment.html")]
 		public virtual ScienceExperiment experiment => native.experiment;
 
-		[Description("Experiment ID.")]
+		[Description("Experiment ID."), Aliases("xid")]
 		public string experimentId => native.experimentID; // do not use experiment.id
 
-		[Description("Experiment title.")]
+		[Description("Experiment title."), Aliases("title", "xtitle")]
 		public string experimentTitle => experiment.experimentTitle;
 
 		Science.Subject _subject;
@@ -96,6 +98,10 @@ namespace RedOnion.KSP.Parts
 			"WBIEmptyExperiment"
 		};
 		internal static PartScience Create(PartBase part, ModuleScienceExperiment module)
+			=> Validate(TryCreate(part, module));
+		private static PartScience Validate(PartScience it)
+			=> it?.experiment != null ? it : null;
+		private static PartScience TryCreate(PartBase part, ModuleScienceExperiment module)
 		{
 			if (module == null || ExcludedExperimentIds.Contains(module.experimentID))
 				return null;
@@ -104,6 +110,8 @@ namespace RedOnion.KSP.Parts
 				return new DMagic(part, module, DMagic.api1);
 			if (DMagic.api2?.type.IsAssignableFrom(type) == true)
 				return new DMagic(part, module, DMagic.api2);
+			if (module.experiment == null)
+				return null;
 			return new PartScience(part, module);
 		}
 
@@ -151,35 +159,46 @@ namespace RedOnion.KSP.Parts
 		{
 			get
 			{
-				if (!experiment.IsAvailableWhile(ScienceUtil.GetExperimentSituation(native.vessel), native.vessel.mainBody))
-					return ScienceState.unavailable;
-				var usage = (ExperimentUsageReqs)native.usageReqMaskInternal;
-				string msg = null;
-				if (!ScienceUtil.RequiredUsageInternalAvailable(
-					native.vessel, native.part, usage, native.experiment, ref msg))
+				try
 				{
-					if (usage == ExperimentUsageReqs.Never)
+					var experiment = this.experiment;
+					if (experiment == null)
+						return ScienceState.error;
+					if (!experiment.IsAvailableWhile(ScienceUtil.GetExperimentSituation(native.vessel), native.vessel.mainBody))
+						return ScienceState.unavailable;
+					var usage = (ExperimentUsageReqs)native.usageReqMaskInternal;
+					string msg = null;
+					if (!ScienceUtil.RequiredUsageInternalAvailable(
+						native.vessel, native.part, usage, native.experiment, ref msg))
+					{
+						if (usage == ExperimentUsageReqs.Never)
+							return ScienceState.unknown;
+						if ((usage & ExperimentUsageReqs.VesselControl) != 0
+							&& !native.vessel.IsControllable)
+							return ScienceState.noControl;
+						if ((usage & ExperimentUsageReqs.CrewInVessel) != 0
+							&& !native.vessel.GetVesselCrew().Any(x =>
+							x.type == ProtoCrewMember.KerbalType.Crew))
+							return ScienceState.noCrew;
+						if ((usage & ExperimentUsageReqs.CrewInPart) != 0
+							&& !native.part.protoModuleCrew.Any(x =>
+							x.type == ProtoCrewMember.KerbalType.Crew))
+							return ScienceState.noCrew;
+						if ((usage & ExperimentUsageReqs.ScientistCrew) != 0
+							&& !((usage & ExperimentUsageReqs.CrewInPart) != 0
+							? native.part.protoModuleCrew
+							: native.vessel.GetVesselCrew()).Any(x =>
+							x.HasEffect<SpecialExperimentSkill>()))
+							return ScienceState.noScientist;
 						return ScienceState.unknown;
-					if ((usage & ExperimentUsageReqs.VesselControl) != 0
-						&& !native.vessel.IsControllable)
-						return ScienceState.noControl;
-					if ((usage & ExperimentUsageReqs.CrewInVessel) != 0
-						&& !native.vessel.GetVesselCrew().Any(x =>
-						x.type == ProtoCrewMember.KerbalType.Crew))
-						return ScienceState.noCrew;
-					if ((usage & ExperimentUsageReqs.CrewInPart) != 0
-						&& !native.part.protoModuleCrew.Any(x =>
-						x.type == ProtoCrewMember.KerbalType.Crew))
-						return ScienceState.noCrew;
-					if ((usage & ExperimentUsageReqs.ScientistCrew) != 0
-						&& !((usage & ExperimentUsageReqs.CrewInPart) != 0
-						? native.part.protoModuleCrew
-						: native.vessel.GetVesselCrew()).Any(x =>
-						x.HasEffect<SpecialExperimentSkill>()))
-						return ScienceState.noScientist;
-					return ScienceState.unknown;
+					}
+					return ScienceState.ready;
 				}
-				return ScienceState.ready;
+				catch (Exception ex)
+				{
+					MainLogger.Log($"Exception checking science module state for {this}: {ex}");
+					return ScienceState.error;
+				}
 			}
 		}
 

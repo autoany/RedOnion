@@ -689,15 +689,17 @@ namespace RedOnion.ROS
 					}
 
 					//------------------------------------------------------------- binary and logic
+					case OpCode.Add:
+					case OpCode.Sub:
+					case OpCode.Mul:
+					case OpCode.Div:
+					case OpCode.Mod:
+					case OpCode.Power:
 					case OpCode.BitOr:
 					case OpCode.BitXor:
 					case OpCode.BitAnd:
 					case OpCode.ShiftLeft:
 					case OpCode.ShiftRight:
-					case OpCode.Add:
-					case OpCode.Sub:
-					case OpCode.Mul:
-					case OpCode.Div:
 					{
 						ref var lhs = ref vals.Top(-2);
 						lhs.Dereference(this);
@@ -1218,7 +1220,7 @@ namespace RedOnion.ROS
 				catch (Exception ex)
 				{
 					this.at = at;
-					if (!(ex is RuntimeError re))
+					if (ex is not RuntimeError re)
 						re = new RuntimeError(compiled, at, ex);
 					result = error = new Value(re);
 					Exit = ExitCode.Exception;

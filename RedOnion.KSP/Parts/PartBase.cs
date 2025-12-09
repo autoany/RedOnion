@@ -34,7 +34,7 @@ namespace RedOnion.KSP.Parts
 	[DocBuild(typeof(Engine), typeof(Sensor), typeof(LinkPart), typeof(SolarPanel), typeof(Generator))]
 	public class PartBase
 	{
-		[Unsafe, Description("[KSP API](https://kerbalspaceprogram.com/api/class_part.html)")]
+		[Unsafe, KspApi("class_part.html")]
 		public Part native { get; }
 		public static implicit operator Part(PartBase it) => it?.native;
 		[WorkInProgress, Description("Type of the part.")]

@@ -110,7 +110,7 @@ namespace RedOnion.ROS
 			}
 			public override bool Equals(ref Value self, object obj)
 			{
-				if (!(obj is Value rhs))
+				if (obj is not Value rhs)
 					return self.num.Int.Equals(obj);
 				if (rhs.desc == this)
 					return self.num.Int == rhs.num.Int;

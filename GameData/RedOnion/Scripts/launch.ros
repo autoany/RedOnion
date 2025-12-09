@@ -9,7 +9,7 @@ var maxSpeed       = .9   // target escape speed (fraction of minimal or in m/s 
 var safeAltitude   = 1 + math.max atmosphere.depth/1000, 7 // safe altitude above atmosphere and mountains
 var startAngle     = math.round(ship.pitch,1) // usually 90 but e.g. DynaWing starts with 81.2
 var firstAngle     = 60   // angle upto which to use simple ratio
-var firstAltitude  = math.max safeAltitude/10, math.max 3, ship.altitude/1000+2 // altitude (in km) of first phase (to reach pitch=firstAngle)
+var firstAltitude  = math.max (safeAltitude-1)/10, math.max 3, ship.altitude/1000+2 // altitude (in km) of first phase (to reach pitch=firstAngle)
 var narrowAltitude = 10*math.round ship.altitude/10+10 // altitude (in m) upto which to go straight up
 
 if startAngle > 89
@@ -28,8 +28,8 @@ def gui
     var lblWidth = 120
     var boxWidth = 60
     var uniWidth = 46
-  //move the window to the left side
-    wnd.x -= (unity.screen.width - 200) / 3
+    wnd.x = 424 - unity.screen.width/2
+    wnd.y = unity.screen.height/2 - 484
 
   //bottom label (above cancel/control/launch buttons) showing additional info
     var hintLabel = new ui.label
@@ -74,6 +74,7 @@ def gui
     wnd.closed += def => selected = 1
     brow.addButton("Cancel",  def => selected = 1).flexWidth = 1
     brow.addButton("Control", def => selected = 2).flexWidth = 1
+    brow.addButton("Science", def => system.main def => run "science.ros").flexWidth = 1
     brow.addButton("Launch",  def => selected = 3).flexWidth = 1
     
   //wait until user selects what to do (or closes the window)
@@ -445,7 +446,7 @@ finally
   vd = null
   user.throttle = 0
   autopilot.disable
-  //autopilot.reset
+  time.warp.cancel
 
 print "DONE! e={0:F5} Ap:{1:F3} Pe:{2:F3}", ship.eccentricity, ship.apoapsis*0.001, ship.periapsis*0.001
 global.control_dir = "obt.prograde"

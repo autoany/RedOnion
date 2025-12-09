@@ -21,7 +21,7 @@ Can also function as separator when staging is enabled.")]
 			|| name.Equals("dockingPort", StringComparison.OrdinalIgnoreCase)
 			|| base.istype(name);
 
-		[Unsafe, Description("[KSP API](https://kerbalspaceprogram.com/api/class_module_docking_node.html)")]
+		[Unsafe, KspApi("class_module_docking_node.html")]
 		public ModuleDockingNode Module => module;
 		protected override bool GetStagingEnabled() => module.StagingEnabled();
 

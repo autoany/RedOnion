@@ -36,7 +36,7 @@ namespace RedOnion.KSP.Parts
 			=> name.Equals(type.ToString(), StringComparison.OrdinalIgnoreCase)
 			|| base.istype(name);
 
-		[Unsafe, Description("[KSP API](https://kerbalspaceprogram.com/api/class_module_decoupler_base.html)")]
+		[Unsafe, KspApi("class_module_decoupler_base.html")]
 		public ModuleDecouplerBase Module => module;
 		protected override bool GetStagingEnabled() => module.StagingEnabled();
 
