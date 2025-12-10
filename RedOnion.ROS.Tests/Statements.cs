@@ -1,3 +1,6 @@
+using System.Globalization;
+using System.Text;
+
 namespace RedOnion.ROS.Tests;
 
 public class StatementTests : CoreTests
@@ -20,7 +23,8 @@ public class StatementTests : CoreTests
 		try
 		{
 			Code = Compile(script);
-			if (Globals == null) Globals = new Globals();
+			if (Globals == null)
+				Globals = new Globals();
 			Assert.IsFalse(Execute(countdown));
 			do UpdatePhysics();
 			while (Paused);
@@ -49,6 +53,10 @@ public class StatementTests : CoreTests
 [TestFixture]
 public class ROS_Statements : StatementTests
 {
+	string lastPrint;
+	public ROS_Statements()
+		=> Print = (msg) => lastPrint = msg;
+
 	[TearDown]
 	public override void Reset() => base.Reset();
 
@@ -199,5 +207,112 @@ public class ROS_Statements : StatementTests
 			"  wait",
 			"  return ++i",
 			"f");
+	}
+
+	string Build(string fn, params object[] args)
+	{
+		var script = new StringBuilder(fn);
+		for (int i = 0; i < args.Length; i++)
+		{
+			script.Append(i == 0 ? ' ' : ',');
+			if (args[i] is string s)
+				script.Append('\"').Append(s.Replace("\"", "\\\"")).Append('\"');
+			else if (args[i] is char c)
+				script.Append('\'').Append(c == '\'' ? "\\'" : c.ToString()).Append('\'');
+			else if (args[i] is null)
+				script.Append("null");
+			else if (args[i] is bool b)
+				script.Append(b ? "true" : "false");
+			else if (args[i] is IFormattable f)
+				script.Append(f.ToString(null, CultureInfo.InvariantCulture));
+			else script.Append(args[i].ToString());
+		}
+		return script.ToString();
+	}
+	public void TestString(string value, params object[] args)
+	{
+		var script = Build("string", args);
+		Test(value, script);
+		script = Build("string.format", args);
+		Test(value, script);
+
+		script = Build("print", args);
+		Test(value, script);
+		Assert.AreEqual(value, lastPrint, "Different print: <{0}>", script);
+	}
+	public void TestFormat(string value, params object[] args)
+	{
+		var script = Build("string", args);
+		Test(value, script);
+		script = Build("string.format", args);
+		Expect<FormatException>(script);
+
+		script = Build("print", args);
+		Test(value, script);
+		Assert.AreEqual(value, lastPrint, "Different print: <{0}>", script);
+	}
+	public void TestFormat2(string value, string value2, params object[] args)
+	{
+		var script = Build("string", args);
+		Test(value, script);
+		script = Build("string.format", args);
+		Test(value2, script);
+
+		script = Build("print", args);
+		Test(value, script);
+		Assert.AreEqual(value, lastPrint, "Different print: <{0}>", script);
+	}
+	public void TestString<Ex>(params object[] args) where Ex : Exception
+	{
+		var script = Build("string", args);
+		Expect<Ex>(script);
+		script = Build("string.format", args);
+		Expect<Ex>(script);
+		script = Build("print", args);
+		Expect<Ex>(script);
+	}
+	[Test]
+	public void ROS_Stts08_Format()
+	{
+		// no argument
+		Test("", "print");
+		Assert.AreEqual("", lastPrint, "Different print: <{0}>", "print");
+		Test("", "string");
+
+		// basic
+		TestString("", "");
+		TestString("1", 1);
+		TestString("1+2", "{0}+{1}", 1, 2);
+		TestFormat2("1, 2", "1", 1, 2);
+		TestString("{hello world}", "{{hello {0}}}", "world");
+		TestFormat2("{{hello world}}", "{hello world}", "{{hello world}}");
+		TestFormat2("{{hello}}, world", "{hello}", "{{hello}}", "world");
+
+		// one arg, no formatting, no errors
+		TestString("", "");
+		TestString(" ", " ");
+		TestFormat("{}", "{}");
+		TestFormat("{0}", "{0}");
+		TestFormat2("{{0}}", "{0}", "{{0}}");
+		TestFormat("hello {0", "hello {0");
+
+		// formatting
+		TestString("a=1, b=true", "a={0}, b={1}", 1, true);
+		TestString("x=10, y=20, z=30", "x={0}, y={1}, z={2}", 10, 20.0, 30f);
+		TestString("<null>", "<{0}>", null);
+		TestString("3.14159", "{0:F5}", Math.PI);
+		TestFormat2("true, 3.14, null", "true", true, 3.14, null);
+		TestString("¤42.00", "{0:C}", 42);
+		TestString("123", "1{1}3", 1, 2, 3);
+		TestString("66666", "6{0}6", 666);
+
+		// errors
+		TestString<FormatException>("hello {0", 42);
+		TestString<FormatException>("hello {5}", 1,2,3);
+
+		// escaping
+		TestFormat2("hello {{0}}, 42", "hello {0}", "hello {{0}}", 42);
+		TestString("{42}", "{{{0}}}", 42);
+		TestFormat2("a{{b}}c, 42", "a{b}c", "a{{b}}c", 42);
 	}
 }

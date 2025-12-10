@@ -1,3 +1,5 @@
+using System.Globalization;
+
 namespace RedOnion.ROS;
 
 public partial class Descriptor
@@ -11,7 +13,7 @@ public partial class Descriptor
 		public override int GetHashCode(ref Value self)
 			=> self.num.Bool.GetHashCode();
 		public override string ToString(ref Value self, string format, IFormatProvider provider, bool debug)
-			=> self.num.Bool.ToString(provider);
+			=> self.num.Bool ? "true" : "false";
 
 		public override bool Call(ref Value result, object self, in Arguments args)
 		{

@@ -48,7 +48,7 @@ namespace RedOnion.ROS
 		/// Box the value (usually returns <see cref="Value.obj"/> but builtin descriptors will box the value-type).
 		/// Used whenever the value needs to be passed as <see cref="object"/>.
 		/// </summary>
-		public virtual object Box(ref Value self)
+		public virtual object  Box(ref Value self)
 			=> self.obj;
 		/// <summary>
 		/// Implements the <c>is</c> operator. Defaults to <c>Type.IsInstanceOfType(it.Box())</c>

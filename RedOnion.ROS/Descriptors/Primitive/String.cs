@@ -1,4 +1,5 @@
 namespace RedOnion.ROS;
+using static ROS.Functions.Print;
 
 public partial class Descriptor
 {
@@ -13,16 +14,31 @@ public partial class Descriptor
 		{
 			if (result.obj != (object)typeof(string))
 				return false;
-			if (args.Length != 1)
+			if (args.Length == 0)
 			{
-				if (args.Length == 0)
-				{
-					result = new Value(this, "");
-					return true;
-				}
-				return false;
+				result = new Value(this, "");
+				return true;
 			}
-			result = new Value(this, args[0].ToStr());
+			var msg = args[0].ToStr();
+			if (args.Length == 1)
+			{
+				result = new Value(this, msg);
+				return true;
+			}
+			if (IsFormatString(msg))
+			{
+				var call = new object[args.Length-1];
+				for (int j = 1; j < args.Length; j++)
+					call[j-1] = args[j].Box();
+				msg = Format(Value.Culture, msg, call);
+				result = msg;
+				return true;
+			}
+			var sb = new StringBuilder(msg);
+			for (int i = 1; i < args.Length; i++)
+				sb.Append(", ").Append(args[i].ToStr());
+			string output = sb.ToString();
+			result = output;
 			return true;
 		}
 
@@ -185,35 +201,25 @@ public partial class Descriptor
 		{
 			public override bool Call(ref Value result, object self, in Arguments args)
 			{
-				if (self == Descriptor.String)
+				if (self == typeof(string))
 				{
 					if (args.Length == 0)
 						return false;
 					var msg = args[0].ToStr();
-					if (args.Length == 1)
-					{
-						result = msg;
-						return true;
-					}
 					var call = new object[args.Length-1];
 					for (int i = 1; i < args.Length; i++)
 						call[i-1] = args[i].Box();
-					msg = string.Format(Value.Culture, msg, call);
+					msg = Format(Value.Culture, msg, call);
 					result = msg;
 					return true;
 				}
 				else
 				{
 					var msg = self.ToString();
-					if (args.Length == 0)
-					{
-						result = msg;
-						return true;
-					}
 					var call = new object[args.Length];
 					for (int i = 0; i < args.Length; i++)
 						call[i] = args[i].Box();
-					msg = string.Format(Value.Culture, msg, call);
+					msg = Format(Value.Culture, msg, call);
 					result = msg;
 					return true;
 				}

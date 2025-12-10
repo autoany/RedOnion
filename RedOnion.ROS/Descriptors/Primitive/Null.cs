@@ -15,7 +15,7 @@ public partial class Descriptor
 		public override int GetHashCode(ref Value self)
 			=> ~0;
 		public override string ToString(ref Value self, string format, IFormatProvider provider, bool debug)
-			=> debug ? "null" : "";
+			=> "null";
 		public override bool Binary(ref Value lhs, OpCode op, ref Value rhs)
 		{
 			switch (op)
