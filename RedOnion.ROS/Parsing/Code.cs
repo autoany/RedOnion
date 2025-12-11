@@ -290,7 +290,8 @@ namespace RedOnion.ROS.Parsing
 					CopyString(top, start);
 					return op;
 				}
-				if (op != OpCode.LogicAnd && op != OpCode.LogicOr && op != OpCode.NullCol)
+				if (op != OpCode.NullCol && op != OpCode.LogicOr && op != OpCode.LogicAnd
+				&& op != OpCode.NullAssign && op != OpCode.LogOrAssign && op != OpCode.LogAndAssign)
 				{
 					if (HasOption(Option.Prefix))
 						goto full;
@@ -306,6 +307,9 @@ namespace RedOnion.ROS.Parsing
 				var second = code.size;
 				Write(0);
 				Rewrite(top);
+				if (!HasOption(Option.Prefix)
+				&& (op == OpCode.NullAssign || op == OpCode.LogOrAssign || op == OpCode.LogAndAssign))
+					Write(OpCode.PostAssign);
 				// update size of second argument (for skipping)
 				Write(code.size - second - 4, second);
 				return op;

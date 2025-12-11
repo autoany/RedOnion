@@ -1,5 +1,3 @@
-using System.Globalization;
-
 namespace RedOnion.ROS;
 
 public partial class Descriptor

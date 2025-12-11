@@ -40,17 +40,12 @@ public class Print(UserObject baseClass) : UserObject("Print", baseClass)
 	{
 		if (string.IsNullOrEmpty(format))
 			return false;
-		for (int i = 0; i < format.Length - 1; i++)
+		for (int i = 0; i < format.Length - 1;)
 		{
-			if (format[i] == '{')
-			{
-				if (format[i + 1] == '{')
-				{//	if escaped "{{" then skip
-					i++;
-					continue;
-				}
+			if (format[i++] != '{')
+				continue;
+			if (format[i++] != '{')
 				return true;
-			}
 		}
 		return false;
 	}

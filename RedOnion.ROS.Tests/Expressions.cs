@@ -249,6 +249,10 @@ public class ROS_Expressions : CoreTests
 		Assert.IsFalse(double.NaN == Value.NaN); // nan does not compare to itself
 		Assert.IsTrue(1.0 == new Value(1.0));
 		Assert.IsTrue(2.0 != new Value(1.0));
+
+		// now for some ??=
+		Test(1, "var a = null; a ??= 1");
+		Test(1, "var b = 1; b ??= 2");
 	}
 
 	[Test]

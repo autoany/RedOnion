@@ -38,16 +38,16 @@ public static class TypeFlagsExtensions
 	public static string ScopeText(this TypeFlags self)
 		=> _scope[(int)self.Scope() >> 4];
 
-	private static readonly string[] _access = new string[] {
+	private static readonly string[] _access = [
 		null, "public", "private", "protected",
 		"internal", null, "private internal", "protected internal",
 		null, null, null, null, null, null, null, null
-	};
-	private static readonly string[] _scope = new string[] {
+	];
+	private static readonly string[] _scope = [
 		null, "final", "virtual", "abstract", "override",
 		"readonly", "const", "static", "static readonly",
 		null, null, null, null, null, null, null
-	};
+	];
 }
 
 public enum OpKind : byte
@@ -142,10 +142,9 @@ public enum OpCode : byte
 	Type			= 0x29, // 			special marker for built-in types in postfix notation
 	Array			= 0x2A, // t[n]	array declaration or creation
 	BigArray		= 0x2B, // t[n]	array declaration or creation
-	NullCol			= 0x2C, // ??		(one ?? two)
-	NullCall		= 0x2D, // ?.()
-	NullDot			= 0x2E, // ?.it
-	Ternary			= 0x2F, // ?:		(or: val1 if cond else val2)
+	NullCall		= 0x2C, // ?.()
+	NullDot			= 0x2D, // ?.it
+	Ternary			= 0x2E, // ?:		(or: val1 if cond else val2)
 
 //	assign
 	Assign			= 0x30, // =
@@ -163,6 +162,7 @@ public enum OpCode : byte
 	NullAssign      = 0x3C, // ??=
 	LogOrAssign     = 0x3D, // ||=
 	LogAndAssign    = 0x3E, // &&=
+	PostAssign		= 0x3F, // code after ??= / ||= / &&= to perform the assignment
 
 //	binary
 	Add             = 0x41, // +
@@ -176,18 +176,19 @@ public enum OpCode : byte
 	BitAnd			= 0x49, // &		!! changed priority from C#/C++ !!
 	ShiftLeft		= 0x4A, // <<		!! changed priority from C#/C++ !!
 	ShiftRight		= 0x4B, // >>		!! changed priority from C#/C++ !!
+	NullCol         = 0x4C, // ??
+	LogicOr         = 0x4D, // ||
+	LogicAnd        = 0x4E, // &&
 
-//	logic + casts
-	LogicOr			= 0x50, // ||
-	LogicAnd		= 0x51, // &&
-	Equals			= 0x52, // ==
-	Differ			= 0x53, // !=
-	Less			= 0x54, // <
-	More			= 0x55, // >
-	LessEq			= 0x56, // <=
-	MoreEq			= 0x57, // >=
-	Identity		= 0x58, // ===
-	NotIdentity		= 0x59, // !==
+	//	logic + casts
+	Equals          = 0x50, // ==
+	Differ			= 0x51, // !=
+	Less			= 0x52, // <
+	More			= 0x53, // >
+	LessEq			= 0x54, // <=
+	MoreEq			= 0x55, // >=
+	Identity		= 0x56, // ===
+	NotIdentity		= 0x57, // !==
 
 	As				= 0x5A, // as
 	AsCast			= 0x5B, // as!
@@ -341,10 +342,9 @@ public enum ExCode : ushort
 	Type			= 0x6029, //		special marker for built-in types in postfix notation
 	Array			= 0x602A, // t[n]	array declaration or creation
 	BigArray		= 0x602B, // t[n]	array declaration or creation
-	NullCol			= 0x022C, // ??		(one ?? two)
-	NullCall		= 0x002D, // ?.()
-	NullDot			= 0x002E, // ?.it
-	Ternary			= 0x202F, // ?:		(or: val1 if cond else val2)
+	NullCall		= 0x002C, // ?.()
+	NullDot			= 0x002D, // ?.it
+	Ternary			= 0x202E, // ?:		(or: val1 if cond else val2)
 
 //	assign
 	Assign			= 0x0130, // =
@@ -362,6 +362,7 @@ public enum ExCode : ushort
 	NullAssign		= 0x013C, // ??=
 	LogOrAssign		= 0x013D, // ||=
 	LogAndAssign	= 0x013E, // &&=
+	PostAssign      = 0x013F, // code after ??= / ||= / &&= to perform the assignment
 
 	//	binary
 	Add             = 0x0B41, // +
@@ -375,19 +376,20 @@ public enum ExCode : ushort
 	BitAnd			= 0x1049, // &		!! changed priority from C#/C++ !!
 	ShiftLeft		= 0x114A, // <<		!! changed priority from C#/C++ !!
 	ShiftRight		= 0x114B, // >>		!! changed priority from C#/C++ !!
+	NullCol         = 0x024C, // ??
+	LogicOr         = 0x034D, // ||		or
+	LogicAnd        = 0x044E, // &&		and
 
-//	logic + casts
-	LogicOr			= 0x0350, // ||		or
-	LogicAnd		= 0x0451, // &&		and
-//	priority 5..8 reserved for C# binary or, xor, and, <<, >>
-	Equals			= 0x0952, // ==
-	Differ			= 0x0953, // !=
-	Less			= 0x0A54, // <
-	More			= 0x0A55, // >
-	LessEq			= 0x0A56, // <=
-	MoreEq			= 0x0A57, // >=
-	Identity		= 0x0A58, // ===
-	NotIdentity		= 0x0A59, // !==
+	//	logic + casts
+	//	priority 5..8 reserved for C# binary or, xor, and, <<, >>
+	Equals          = 0x0950, // ==
+	Differ			= 0x0951, // !=
+	Less			= 0x0A52, // <
+	More			= 0x0A53, // >
+	LessEq			= 0x0A54, // <=
+	MoreEq			= 0x0A55, // >=
+	Identity		= 0x0A56, // ===
+	NotIdentity		= 0x0A57, // !==
 
 	As				= 0x0A5A, // as
 	AsCast			= 0x0A5B, // as!
@@ -607,14 +609,14 @@ public static class OpCodeExtensions
 		return (BlockCode)self;
 	}
 
-	private static readonly byte[] _info = new byte[] {
+	private static readonly byte[] _info = [
 		// 0    1    2    3    4    5    6    7     8    9    A    B    C    D    E    F
 		0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00, 0x00,0x00,0x00,0x00,0x01,0x02,0x04,0x00, //0 constants
 		0x01,0x02,0x04,0x08,0x10,0x41,0x42,0x44, 0x48,0x50,0x01,0x10,0xC4,0xC8,0xCA,0x90, //1 numbers
-		0x40,0x40,0x00,0x20,0x60,0x00,0x60,0x00, 0x20,0x60,0x60,0x60,0x02,0x00,0x00,0x20, //2 special
-		0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x01, 0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x81, //3 assign
-		0x81,0x0B,0x0B,0x0C,0x0C,0x0C,0x0D,0x0E, 0x0F,0x10,0x11,0x11,0x91,0x91,0x91,0x91, //4 binary
-		0x03,0x04,0x09,0x09,0x0A,0x0A,0x0A,0x0A, 0x0A,0x0A,0x0A,0x0A,0x0A,0x0A,0x0A,0x0A, //5 logic + casts
+		0x40,0x40,0x00,0x20,0x60,0x00,0x60,0x00, 0x20,0x60,0x60,0x60,0x00,0x00,0x20,0x80, //2 special
+		0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x01, 0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x01, //3 assign
+		0x80,0x0B,0x0B,0x0C,0x0C,0x0C,0x0D,0x0E, 0x0F,0x10,0x11,0x11,0x02,0x03,0x04,0x80, //4 binary
+		0x09,0x09,0x0A,0x0A,0x0A,0x0A,0x0A,0x0A, 0x80,0x80,0x0A,0x0A,0x0A,0x0A,0x0A,0x0A, //5 logic + casts
 		0x52,0x52,0x52,0x52,0xD2,0xD2,0xD2,0xD2, 0xD2,0xD2,0x52,0x52,0x52,0x52,0x52,0x52, //6 unary
 		0x53,0x53,0xD3,0xD3,0xD3,0xD3,0xD3,0xD3, 0x54,0x54,0xD4,0xD4,0xD4,0xD4,0xD4,0xD4, //7 post/pre
 		// the rest of this table must be zeros
@@ -626,34 +628,34 @@ public static class OpCodeExtensions
 		0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00, 0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00, //D model
 		0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00, 0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00, //E unused
 		0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00, 0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00  //F meta
-	};
-	private static readonly string[] _text = new string[] {
+	];
+	private static readonly string[] _text = [
 	//	literals
 		"void", "null", "false", "true", "this", "base", "value", null,
 		"exception", "default", null, "string", "char", "wchar", "lchar", "number",
 	//	numbers
 		"byte", "ushort", "uint", "ulong", "quad", "sbyte", "short", "int",
 		"long", "hyper", "bool", "complex", "float", "double", "long double", "decimal",
-	//	special
+	//	specialr
 		"new",  "()",   "()",   "()",   "()",   "[]",   "[]",   ".",
-		"var",  ".[]",  "[]",   "??",   "?.",   "?.()", "?:",   "=>",
+		"var",  null,   "[]",   "[]",   "?.()", "?.",   "?:",   null,
 	//	assign
 		"=",    "+=",   "-=",   "*=",   "/=",   "%=",   "**=",  "|=",
-		"^=",   "&=",   "<<=",  ">>=",  null,   null,   null,   null,
+		"^=",   "&=",   "<<=",  ">>=",  "??=",  "||=",  "&&=",  null,
 	//	binary
 		null,   "+",    "-",    "*",    "/",    "%",    "**",   "|",
-		"^",	"&",    "<<",   ">>",   null,   null,   null,   null,
+		"^",	"&",    "<<",   ">>",   "??",   "||",   "&&",   null,
 	//	logic + casts
-		"||",   "&&",   "==",   "!=",   "<",    ">",    "<=",   ">=",
-		"===",  "!==",  "as",   "as!",  "!",    "is",   "is!",  "in",
+		"==",   "!=",   "<",    ">",    "<=",   ">=",   "===",  "!==",
+		null,   null,   "as",   "as!",  "!",    "is",   "is!",  "in",
 	//	unary
-		"+",    "-",    "~",    "!",    "&",    "*",    "[]",   null,
+		"+",    "-",    "~",    "!",    "&",    "*",    null,   null,
 		"typeof", "nameof", "await", null,  "new", "delete", "ref", "out",
 	//	post/pre
-		"++",   "--",   "++",   "--",   null,   null,   null,   null,
-		null,   null,   null,   null,   null,   null,   null,   null,
+		"++",   "--",   null,   null,   null,   null,   null,   null,
+		"++",   "--",   null,   null,   null,   null,   null,   null,
 	//	statements
-		"{}", null, "return", "throw", "break", "continue", "for", "foreach",
+		"{}", "()", "return", "throw", "break", "continue", "for", "foreach",
 		"while", "do", "until", "do-until", "if", "unless", "else", null,
 		"pop", "yield", "goto", "case", "switch", null, "using", "catch",
 		"with", "from", null,   null,   null,   null,   null,	null,
@@ -677,5 +679,5 @@ public static class OpCodeExtensions
 	//	meta (comments)
 		null,   null,   null,   null,   null,   null,   null,   null,
 		null,   null,   null,   null,   null,   null,   null,   null
-	};
+	];
 }

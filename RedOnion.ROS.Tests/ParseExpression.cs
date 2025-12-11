@@ -20,6 +20,8 @@
 //	var a:byte[]
 //	var a = new byte[n]
 
+using System.Collections.Generic;
+
 namespace RedOnion.ROS.Tests;
 
 public class ParserTests : Parser
@@ -465,16 +467,17 @@ public class ROS_ParseExpression : ParserTests
 	[Test]
 	public void ROS_PExpr05_Logic()
 	{
-		var i = 0;
-		foreach (var s in new string[]
+		foreach (var p in new KeyValuePair<string, OpCode>[]
 		{
-			"x && y",
-			"x and y",
-			"x || y",
-			"x or y",
+			new("x && y", OpCode.LogicAnd),
+			new("x and y", OpCode.LogicAnd),
+			new("x || y", OpCode.LogicOr),
+			new("x or y", OpCode.LogicOr),
+			new("x ?? y", OpCode.NullCol),
 		})
 		{
-			Test(s,
+			var op = p.Value;
+			Test(p.Key,
 				() =>
 				{
 					ValueCheck	( 0, 0, "x");
@@ -483,12 +486,12 @@ public class ROS_ParseExpression : ParserTests
 					ValueCheck	( 9, 1, "y");
 					ValueCheck	(13, OpCode.Identifier);
 					ValueTopMark(18, 9);
-					ValueCheck	(18, i >= 2 ? OpCode.LogicOr : OpCode.LogicAnd);
+					ValueCheck	(18, op);
 					ValueFinal	(23);
 				},
 				() =>
 				{
-					CodeCheck( 0, i >= 2 ? OpCode.LogicOr : OpCode.LogicAnd);
+					CodeCheck( 0, op);
 					CodeCheck( 1, OpCode.Identifier);
 					CodeCheck( 2, 0, "x");
 					CodeCheck( 6, 5); // size of second expression for quick skip
@@ -500,19 +503,58 @@ public class ROS_ParseExpression : ParserTests
 				{
 					CodeCheck( 0, OpCode.Identifier);
 					CodeCheck( 1, 0, "x");
-					CodeCheck( 5, i >= 2 ? OpCode.LogicOr : OpCode.LogicAnd);
+					CodeCheck( 5, op);
 					CodeCheck( 6, 5); // size of second expression for quick skip
 					CodeCheck(10, OpCode.Identifier);
 					CodeCheck(11, 1, "y");
 					CodeCheck(15);
 				}
 			);
-			i++;
 		}
 	}
 
 	[Test]
-	public void ROS_PExpr06_PreAndPost()
+	public void ROS_PExpr06_Assign()
+	{
+		Test("x ??= y",
+			() =>
+			{
+				ValueCheck(0, 0, "x");
+				ValueCheck(4, OpCode.Identifier);
+				ValueTopMark(9, 0);
+				ValueCheck(9, 1, "y");
+				ValueCheck(13, OpCode.Identifier);
+				ValueTopMark(18, 9);
+				ValueCheck(18, OpCode.NullAssign);
+				ValueFinal(23);
+			},
+			() =>
+			{
+				CodeCheck(0, OpCode.NullAssign);
+				CodeCheck(1, OpCode.Identifier);
+				CodeCheck(2, 0, "x");
+				CodeCheck(6, 5); // size of second expression for quick skip
+				CodeCheck(10, OpCode.Identifier);
+				CodeCheck(11, 1, "y");
+				CodeCheck(15);
+			},
+			() =>
+			{
+				CodeCheck(0, OpCode.Identifier);
+				CodeCheck(1, 0, "x");
+				CodeCheck(5, OpCode.NullAssign);
+				CodeCheck(6, 6); // size of second expression for quick skip
+				CodeCheck(10, OpCode.Identifier);
+				CodeCheck(11, 1, "y");
+				CodeCheck(15, OpCode.PostAssign);
+				CodeCheck(16);
+			}
+		);
+	}
+
+
+	[Test]
+	public void ROS_PExpr07_PreAndPost()
 	{
 		Test(
 			"++x--",
@@ -544,7 +586,7 @@ public class ROS_ParseExpression : ParserTests
 	}
 
 	[Test]
-	public void ROS_PExpr07_StringAndChar()
+	public void ROS_PExpr08_StringAndChar()
 	{
 		Test(
 			"\"string\" + 'c'",
@@ -581,7 +623,7 @@ public class ROS_ParseExpression : ParserTests
 	}
 
 	[Test]
-	public void ROS_PExpr08_CallWithUnary()
+	public void ROS_PExpr09_CallWithUnary()
 	{
 		var i = 0;
 		foreach (var s in new string[]
@@ -663,7 +705,7 @@ public class ROS_ParseExpression : ParserTests
 	}
 
 	[Test]
-	public void ROS_PExpr09_CallTwoArgs()
+	public void ROS_PExpr10_CallTwoArgs()
 	{
 		foreach (var s in new string[]
 		{
@@ -713,7 +755,7 @@ public class ROS_ParseExpression : ParserTests
 	}
 
 	[Test]
-	public void ROS_PExpr10_CallManyArgs()
+	public void ROS_PExpr11_CallManyArgs()
 	{
 		foreach (var s in new string[]
 		{
@@ -773,7 +815,7 @@ public class ROS_ParseExpression : ParserTests
 	}
 
 	[Test]
-	public void ROS_PExpr11_NestedCalls()
+	public void ROS_PExpr12_NestedCalls()
 	{
 		Test(
 			"f g(x), h x",
@@ -839,7 +881,7 @@ public class ROS_ParseExpression : ParserTests
 	}
 
 	[Test]
-	public void ROS_PExpr12_MoreCalls()
+	public void ROS_PExpr13_MoreCalls()
 	{
 		Test(
 			"f (g x, y), z, h()",
@@ -914,7 +956,7 @@ public class ROS_ParseExpression : ParserTests
 	}
 
 	[Test]
-	public void ROS_PExpr13_NewNoArg()
+	public void ROS_PExpr14_NewNoArg()
 	{
 		Test(
 			"new pt",
@@ -943,7 +985,7 @@ public class ROS_ParseExpression : ParserTests
 	}
 
 	[Test]
-	public void ROS_PExpr14_NewZeroArgs()
+	public void ROS_PExpr15_NewZeroArgs()
 	{
 		Test(
 			"new pt()",
@@ -1000,7 +1042,7 @@ public class ROS_ParseExpression : ParserTests
 	}
 
 	[Test]
-	public void ROS_PExpr15_NewOneArg()
+	public void ROS_PExpr16_NewOneArg()
 	{
 		Test(
 			"new pt 1",
@@ -1040,7 +1082,7 @@ public class ROS_ParseExpression : ParserTests
 	}
 
 	[Test]
-	public void ROS_PExpr16_NewTwoArgs()
+	public void ROS_PExpr17_NewTwoArgs()
 	{
 		Test(
 			"new pt 1,2",
@@ -1087,7 +1129,7 @@ public class ROS_ParseExpression : ParserTests
 	}
 
 	[Test]
-	public void ROS_PExpr17_NewThreeArgs()
+	public void ROS_PExpr18_NewThreeArgs()
 	{
 		Test(
 			"new pt 1,2,3",
@@ -1144,7 +1186,7 @@ public class ROS_ParseExpression : ParserTests
 	}
 
 	[Test]
-	public void ROS_PExpr18_Variable()
+	public void ROS_PExpr19_Variable()
 	{
 		Test("var x",
 			() =>
@@ -1179,7 +1221,7 @@ public class ROS_ParseExpression : ParserTests
 	}
 
 	[Test]
-	public void ROS_PExpr19_TypedVariable()
+	public void ROS_PExpr20_TypedVariable()
 	{
 		Test(
 			"var x int", // pure style
@@ -1216,7 +1258,7 @@ public class ROS_ParseExpression : ParserTests
 	}
 
 	[Test]
-	public void ROS_PExpr20_ArrayVariable()
+	public void ROS_PExpr21_ArrayVariable()
 	{
 		foreach (var s in new string[]
 		{
@@ -1267,7 +1309,7 @@ public class ROS_ParseExpression : ParserTests
 	}
 
 	[Test]
-	public void ROS_PExpr21_CreateArray()
+	public void ROS_PExpr22_CreateArray()
 	{
 		Test(
 			"var a = new byte[n]",
@@ -1321,7 +1363,7 @@ public class ROS_ParseExpression : ParserTests
 	}
 
 	[Test]
-	public void ROS_PExpr22_AutocallWithNew()
+	public void ROS_PExpr23_AutocallWithNew()
 	{
 		Test(
 			"fn new pt 1, 2",
@@ -1379,7 +1421,7 @@ public class ROS_ParseExpression : ParserTests
 	}
 
 	[Test]
-	public void ROS_PExpr23_NewWithDot()
+	public void ROS_PExpr24_NewWithDot()
 	{
 		Test(
 			"var wnd = new ui.window",

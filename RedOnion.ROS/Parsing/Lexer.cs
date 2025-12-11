@@ -68,6 +68,11 @@ namespace RedOnion.ROS.Parsing
 				{
 					End++;
 					ExCode = ExCode.NullCol;
+					if (Peek == '=')
+					{
+						End++;
+						ExCode = ExCode.NullAssign;
+					}
 					return;
 				}
 				if (Peek == '.')
