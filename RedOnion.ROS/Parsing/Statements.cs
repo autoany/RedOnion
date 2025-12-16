@@ -89,10 +89,8 @@ namespace RedOnion.ROS.Parsing
 		/// Parse block of statements.
 		/// Returns number of statements parsed
 		/// </summary>
-		protected virtual int ParseBlock(Flag flags, int ind /* = -1 */)
+		protected virtual int ParseBlock(Flag flags, int ind)
 		{
-			/*if (ind < 0)
-				ind = Indent;*/
 			if (ind == 0 && First && (flags & Flag.Limited) == 0)
 				ind = -1;
 			var nosize = (flags & Flag.NoSize) != 0;
@@ -127,10 +125,13 @@ namespace RedOnion.ROS.Parsing
 				if (ExCode == ExCode.Catch || ExCode == ExCode.Finally
 					|| ExCode == ExCode.Case || ExCode == ExCode.Default)
 					break;
-				if ((flags & Flag.WasDo) != 0 && (ExCode == ExCode.While || ExCode == ExCode.Until))
-					break;
-				if ((flags & Flag.WasIf) != 0 && ExCode == ExCode.Else)
-					break;
+				if (Indent == ind)
+				{
+					if ((flags & Flag.WasDo) != 0 && (ExCode == ExCode.While || ExCode == ExCode.Until))
+						break;
+					if ((flags & Flag.WasIf) != 0 && ExCode == ExCode.Else)
+						break;
+				}
 				ParseStatement(flags);
 				count++;
 			}

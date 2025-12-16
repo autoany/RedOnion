@@ -355,16 +355,21 @@ def control ship, target, x, y
         node.next.remove
         wait
       var nd = node time.now + dt, dv*1.3
+      print "pe: {0:F3}, dv: {1:F3}, dt: {2}", nd.orbit.next.periapsis/1000, nd.prograde, time.delta dt
 
       // try to improve
       var tpe = r2 - home.radius
       var tstep = math.clamp ship.period/30, 1, 3600
       var dstep = 1
-      for var g = 0; g < 100 and dstep >= 0.005; g++
+      var maxdv = dv*3
+      var norm = 1
+      for var g = 0; g < 100 and dstep >= 0.005 and nd.prograde < maxdv and nd.orbit.next.body == home; g++
         var steps = 0
         var ppe = nd.orbit.next.periapsis
         var pe
         do
+          if bAbort.pressed
+            return
           pe = ppe
           nd.time += tstep
           steps++
@@ -377,17 +382,29 @@ def control ship, target, x, y
         if pe > tpe
           steps = 0
           var spe = pe - 0.2*(pe - tpe)
+          var maxdv2 = math.min maxdv, nd.deltav.size * 1.2
           do
+            if bAbort.pressed
+              return
             pe = ppe
             nd.prograde += dstep
+            for var nstep = dstep; nd.orbit.next.inclination > 5 and nstep > 0.002 and nstep > dstep/16
+              var pinc = nd.orbit.next.inclination
+              nd.normal += norm*nstep/2
+              if nd.orbit.next.inclination > pinc
+                norm *= -1
+                nd.normal += norm*nstep
+                nstep /= 2
             steps++
-          while (ppe = nd.orbit.next.periapsis) >= spe
+          while (ppe = nd.orbit.next.periapsis) >= spe and nd.deltav.size < maxdv2
           dstep *= 1 - 0.5^steps
         else
           steps = 0
           do
+            if bAbort.pressed
+              return
             pe = ppe
-            nd.prograde += dstep
+            nd.prograde -= dstep
             steps++
           while (ppe = nd.orbit.next.periapsis) < tpe
           if steps > 1

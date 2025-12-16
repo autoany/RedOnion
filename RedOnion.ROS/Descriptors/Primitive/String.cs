@@ -42,6 +42,9 @@ public partial class Descriptor
 			return true;
 		}
 
+		protected string ConvertCommas(string str)
+			=> Value.Culture == CultureInfo.InvariantCulture ? 
+				str.Replace(',', '.') : str;
 		public override bool Convert(ref Value self, Descriptor to, CallFlags flags = CallFlags.Convert)
 		{
 			var str = self.obj.ToString();
@@ -55,38 +58,50 @@ public partial class Descriptor
 				self = str.Length == 0 ? '\0' : str[0];
 				return true;
 			case ExCode.Byte:
-				self = byte.Parse(str, Value.Culture);
+				self = byte.Parse(ConvertCommas(str), Value.Culture);
 				return true;
 			case ExCode.UShort:
-				self = ushort.Parse(str, Value.Culture);
+				self = ushort.Parse(ConvertCommas(str), Value.Culture);
 				return true;
 			case ExCode.UInt:
-				self = uint.Parse(str, Value.Culture);
+				self = uint.Parse(ConvertCommas(str), Value.Culture);
 				return true;
 			case ExCode.ULong:
-				self = ulong.Parse(str, Value.Culture);
+				self = ulong.Parse(ConvertCommas(str), Value.Culture);
 				return true;
 			case ExCode.SByte:
-				self = sbyte.Parse(str, Value.Culture);
+				self = sbyte.Parse(ConvertCommas(str), Value.Culture);
 				return true;
 			case ExCode.Short:
-				self = short.Parse(str, Value.Culture);
+				self = short.Parse(ConvertCommas(str), Value.Culture);
 				return true;
 			case ExCode.Int:
-				self = int.Parse(str, Value.Culture);
+				self = int.Parse(ConvertCommas(str), Value.Culture);
 				return true;
 			case ExCode.Long:
-				self = long.Parse(str, Value.Culture);
+				self = long.Parse(ConvertCommas(str), Value.Culture);
 				return true;
 			case ExCode.Float:
-				self = float.Parse(str, Value.Culture);
+				self = float.Parse(ConvertCommas(str), Value.Culture);
 				return true;
 			case ExCode.Number:
 			case ExCode.Double:
-				self = double.Parse(str, Value.Culture);
+				self = double.Parse(ConvertCommas(str), Value.Culture);
 				return true;
 			case ExCode.Bool:
-				self = bool.Parse(str);
+				foreach (char c in str)
+				{
+					if (char.IsWhiteSpace(c) || char.IsSymbol(c))
+						continue;
+					self = c == 't' || c == 'T' // true
+						|| c == 'y' || c == 'Y' // yes
+						|| c == 'a' || c == 'A' // ano
+						|| c == 'e' || c == 'E' // enable
+						|| c == 'p' || c == 'P' // povol
+						|| (c > '0' && c <= '9');
+					return true;
+				}
+				self = false;
 				return true;
 			}
 			return false;

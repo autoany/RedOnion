@@ -131,6 +131,13 @@ public class ROS_Statements : StatementTests
 			"  it = 1",
 			"  return it",
 			"return it+2");
+
+		Lines(ExitCode.Return, 1,
+			"do",
+			"  while true",
+			"    return 1",
+			"while false",
+			"return 2");
 	}
 
 	[Test]

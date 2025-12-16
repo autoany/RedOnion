@@ -141,7 +141,6 @@ public class ROS_ParseStatements : ParserTests
 		});
 	}
 
-	/*
 	[Test]
 	public void ROS_PStts05_Variables()
 	{
@@ -150,88 +149,149 @@ public class ROS_ParseStatements : ParserTests
 			"var y = x\n" +
 			"var z int = x\n" +
 			"var i: uint\n" +
-			"var j as long = z");
-		CodeCheck( 0, OpCode.Var);
-		CodeCheck( 1, 0, "x");
-		CodeCheck( 5, OpCode.Void);
-		CodeCheck( 6, OpCode.Int);
-		CodeCheck( 7, 1);
-		CodeCheck(11, OpCode.Var);
-		CodeCheck(12, 1, "y");
-		CodeCheck(16, OpCode.Void);
-		CodeCheck(17, OpCode.Identifier);
-		CodeCheck(18, 0, "x");
-		CodeCheck(22, OpCode.Var);
-		CodeCheck(23, 2, "z");
-		CodeCheck(27, OpCode.Int);
-		CodeCheck(28, OpCode.Identifier);
-		CodeCheck(29, 0, "x");
-		CodeCheck(33, OpCode.Var);
-		CodeCheck(34, 3, "i");
-		CodeCheck(38, OpCode.UInt);
-		CodeCheck(39, OpCode.Void);
-		CodeCheck(40, OpCode.Var);
-		CodeCheck(41, 4, "j");
-		CodeCheck(45, OpCode.Long);
-		CodeCheck(46, OpCode.Identifier);
-		CodeCheck(47, 2, "z");
-		CodeCheck(51);
+			"var j as long = z",
+		() =>
+		{
+			CodeCheck(0, OpCode.Var);
+			CodeCheck(1, 0, "x");
+			CodeCheck(5, OpCode.Void);
+			CodeCheck(6, OpCode.Int);
+			CodeCheck(7, 1);
+			CodeCheck(11, OpCode.Var);
+			CodeCheck(12, 1, "y");
+			CodeCheck(16, OpCode.Void);
+			CodeCheck(17, OpCode.Identifier);
+			CodeCheck(18, 0, "x");
+			CodeCheck(22, OpCode.Var);
+			CodeCheck(23, 2, "z");
+			CodeCheck(27, OpCode.Int);
+			CodeCheck(28, OpCode.Identifier);
+			CodeCheck(29, 0, "x");
+			CodeCheck(33, OpCode.Var);
+			CodeCheck(34, 3, "i");
+			CodeCheck(38, OpCode.UInt);
+			CodeCheck(39, OpCode.Void);
+			CodeCheck(40, OpCode.Var);
+			CodeCheck(41, 4, "j");
+			CodeCheck(45, OpCode.Long);
+			CodeCheck(46, OpCode.Identifier);
+			CodeCheck(47, 2, "z");
+			CodeCheck(51);
+		}, () =>
+		{
+			CodeCheck(0, OpCode.Void);
+			CodeCheck(1, OpCode.Int);
+			CodeCheck(2, 1);
+			CodeCheck(6, OpCode.Var);
+			CodeCheck(7, 0, "x");
+			CodeCheck(11, OpCode.Pop);
+			CodeCheck(12, OpCode.Void);
+			CodeCheck(13, OpCode.Identifier);
+			CodeCheck(14, 0, "x");
+			CodeCheck(18, OpCode.Var);
+			CodeCheck(19, 1, "y");
+			CodeCheck(23, OpCode.Pop);
+			CodeCheck(24, OpCode.Type);
+			CodeCheck(25, OpCode.Int);
+			CodeCheck(26, OpCode.Identifier);
+			CodeCheck(27, 0, "x");
+			CodeCheck(31, OpCode.Var);
+			CodeCheck(32, 2, "z");
+			CodeCheck(36, OpCode.Pop);
+			CodeCheck(37, OpCode.Type);
+			CodeCheck(38, OpCode.UInt);
+			CodeCheck(39, OpCode.Void);
+			CodeCheck(40, OpCode.Var);
+			CodeCheck(41, 3, "i");
+			CodeCheck(45, OpCode.Pop);
+			CodeCheck(46, OpCode.Type);
+			CodeCheck(47, OpCode.Long);
+			CodeCheck(48, OpCode.Identifier);
+			CodeCheck(49, 2, "z");
+			CodeCheck(53, OpCode.Var);
+			CodeCheck(54, 4, "j");
+			CodeCheck(58, OpCode.Pop);
+			CodeCheck(59);
+		});
 	}
 
 	[Test]
 	public void ROS_PStts06_WhileDo()
 	{
-		Test("while loop do loop = action()");
-		CodeCheck( 0, OpCode.While);
-		CodeCheck( 1, OpCode.Identifier);
-		CodeCheck( 2, 0, "loop");
-		CodeCheck( 6, 12); // size of do-block
-		CodeCheck(10, OpCode.Assign);
-		CodeCheck(11, OpCode.Identifier);
-		CodeCheck(12, 0, "loop");
-		CodeCheck(16, OpCode.Call0);
-		CodeCheck(17, OpCode.Identifier);
-		CodeCheck(18, 1, "action");
-		CodeCheck(22);
+		Test("while loop do loop = action()",
+		() =>
+		{
+			CodeCheck(0, OpCode.While);
+			CodeCheck(1, 5); // size of cond
+			CodeCheck(5, OpCode.Identifier);
+			CodeCheck(6, 0, "loop");
+			CodeCheck(10, 12); // size of do-block
+			CodeCheck(14, OpCode.Assign);
+			CodeCheck(15, OpCode.Identifier);
+			CodeCheck(16, 0, "loop");
+			CodeCheck(20, OpCode.Call0);
+			CodeCheck(21, OpCode.Identifier);
+			CodeCheck(22, 1, "action");
+			CodeCheck(26);
+		}, () =>
+		{
+			CodeCheck(0, OpCode.While);
+			CodeCheck(1, 6); // size of cond
+			CodeCheck(5, OpCode.Identifier);
+			CodeCheck(6, 0, "loop");
+			CodeCheck(10, OpCode.Cond);
+			CodeCheck(11, 13); // size of do-block
+			CodeCheck(15, OpCode.Identifier);
+			CodeCheck(16, 0, "loop");
+			CodeCheck(20, OpCode.Identifier);
+			CodeCheck(21, 1, "action");
+			CodeCheck(25, OpCode.Call0);
+			CodeCheck(26, OpCode.Assign);
+			CodeCheck(27, OpCode.Pop);
+			CodeCheck(28);
+		});
 	}
 
 	[Test]
-	public void ROS_PStts07_DoUntil_v1()
-	{
-		Test("do stop = action()\nuntil stop");
-		ROS_PStts07_DoUntil();
-	}
-
-	[Test]
-	public void ROS_PStts07_DoUntil_v2()
-	{
-		Test("do stop = action() until stop");
-		ROS_PStts07_DoUntil();
-	}
-
-	[Test]
-	public void ROS_PStts07_DoUntil_v3()
-	{
-		Test("do stop = action(); until stop");
-		ROS_PStts07_DoUntil();
-	}
-
 	public void ROS_PStts07_DoUntil()
 	{
-		CodeCheck( 0, OpCode.DoUntil);
-		CodeCheck( 1, 12); // do-block size
-		CodeCheck( 5, OpCode.Assign);
-		CodeCheck( 6, OpCode.Identifier);
-		CodeCheck( 7, 0, "stop");
-		CodeCheck(11, OpCode.Call0);
-		CodeCheck(12, OpCode.Identifier);
-		CodeCheck(13, 1, "action");
-		CodeCheck(17, 5);
-		CodeCheck(21, OpCode.Identifier);
-		CodeCheck(22, 0, "stop");
-		CodeCheck(26);
+		foreach (var s in new[] {
+			"do stop = action()\nuntil stop",
+			"do stop = action() until stop",
+			"do stop = action(); until stop" })
+		Test(s, () =>
+		{
+			CodeCheck(0, OpCode.DoUntil);
+			CodeCheck(1, 5); // condition size
+			CodeCheck(5, 12); // do-block size
+			CodeCheck(9, OpCode.Assign);
+			CodeCheck(10, OpCode.Identifier);
+			CodeCheck(11, 0, "stop");
+			CodeCheck(15, OpCode.Call0);
+			CodeCheck(16, OpCode.Identifier);
+			CodeCheck(17, 1, "action");
+			CodeCheck(21, OpCode.Identifier);
+			CodeCheck(22, 0, "stop");
+			CodeCheck(26);
+		}, () =>
+		{
+			CodeCheck(0, OpCode.DoUntil);
+			CodeCheck(1, 5); // condition size
+			CodeCheck(5, 13); // do-block size
+			CodeCheck(9, OpCode.Identifier);
+			CodeCheck(10, 0, "stop");
+			CodeCheck(14, OpCode.Identifier);
+			CodeCheck(15, 1, "action");
+			CodeCheck(19, OpCode.Call0);
+			CodeCheck(20, OpCode.Assign);
+			CodeCheck(21, OpCode.Pop);
+			CodeCheck(22, OpCode.Identifier);
+			CodeCheck(23, 0, "stop");
+			CodeCheck(27);
+		});
 	}
 
+	/* TODO
 	[Test]
 	public void ROS_PStts08_For()
 	{
